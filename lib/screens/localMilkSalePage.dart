@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+
 import '../model/Customer.dart';
 import '../providers/cow_ratechart_provider.dart';
-import '../service/local_milk_sale_service.dart';
-import '../widgets/appbar.dart';
+import '../providers/buffalo_ratechart_provider.dart';
 import '../model/admin.dart';
 import '../model/localsale.dart';
-import '../providers/buffalo_ratechart_provider.dart';
+import '../widgets/appbar.dart';
 
 class LocalMilkSalePage extends StatefulWidget {
   @override
@@ -16,97 +18,80 @@ class LocalMilkSalePage extends StatefulWidget {
 }
 
 class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
-  final _formKey = GlobalKey<FormState>();
-  String? selectedDivision = 'HeadOffice';
   String selectedType = 'Credit';
   String selectedCowBuff = 'Buffalo';
-  double totalValue = 0;
   int? editingIndex;
 
-  TextEditingController litersController = TextEditingController();
-  TextEditingController fatController = TextEditingController();
-  TextEditingController snfController = TextEditingController();
-  TextEditingController amountController = TextEditingController();
-  TextEditingController buffaloRateController = TextEditingController();
-  TextEditingController cowRateController = TextEditingController();
-  TextEditingController dateController = TextEditingController();
-  TextEditingController customerController = TextEditingController();
-  TextEditingController codeController = TextEditingController();
+  final litersController = TextEditingController();
+  final amountController = TextEditingController();
+  final buffaloRateController = TextEditingController();
+  final cowRateController = TextEditingController();
+  final codeController = TextEditingController();
+  final customerController = TextEditingController();
+  final dateController = TextEditingController();
+
+  final _paymentMethod = <bool>[true, false];
+  final _milkTypeToggle = <bool>[true, false];
 
   List<Customer> customerList = [];
-  final List<bool> _paymentMethod = <bool>[true, false];
-  final List<bool> _selectedMilkType = <bool>[true, false];
-
   List<LocalMilkSale> localeSaleList = [];
-  Admin admin = CustomWidgets.currentAdmin();
-  double localMilkSaleRateBuffalo = 0;
-  double localMilkSaleRateCow = 0;
+  late Admin admin;
 
+  final FocusNode quantityFocusNode = FocusNode();
   @override
   void initState() {
     super.initState();
-    selectedCowBuff = 'Buffalo';
-    customerList = CustomWidgets.allCustomers();
+    Hive.initFlutter();
+    admin = CustomWidgets.currentAdmin();
     dateController.text = CustomWidgets.extractDate(DateTime.now());
+    customerList = CustomWidgets.allCustomers();
+    _loadRates();
+    _loadSavedEntries();
 
-    litersController.addListener(calculateAmount);
+    litersController.addListener(_calculateAmount);
     buffaloRateController.addListener(() {
-      calculateAmount();
-      updateLocalMilkRate();
+      _calculateAmount();
+      _updateRateProvider();
     });
     cowRateController.addListener(() {
-      calculateAmount();
-      updateLocalMilkRate();
+      _calculateAmount();
+      _updateRateProvider();
     });
-
-    localMilkSaleRateBuffalo =
-        Provider.of<BuffaloRatechartProvider>(context, listen: false)
-            .localMilkSaleBuffalo;
-    localMilkSaleRateCow =
-        Provider.of<CowRateChartProvider>(context, listen: false)
-            .localMilkSaleCow;
-
-    buffaloRateController.text = localMilkSaleRateBuffalo.toStringAsFixed(2);
-    cowRateController.text = localMilkSaleRateCow.toStringAsFixed(2);
-
-    loadSavedEntries();
   }
 
-  void updateLocalMilkRate() {
-    if (selectedCowBuff == "Buffalo") {
-      Provider.of<BuffaloRatechartProvider>(context, listen: false)
-          .localMilkSaleBuffalo =
-          double.tryParse(buffaloRateController.text) ?? 0;
-    } else {
-      Provider.of<CowRateChartProvider>(context, listen: false)
-          .localMilkSaleCow =
-          double.tryParse(cowRateController.text) ?? 0;
+  void _loadRates() {
+    buffaloRateController.text = Provider.of<BuffaloRatechartProvider>(context, listen: false)
+        .localMilkSaleBuffalo
+        .toStringAsFixed(2);
+    cowRateController.text = Provider.of<CowRateChartProvider>(context, listen: false)
+        .localMilkSaleCow
+        .toStringAsFixed(2);
+  }
+
+  Future<void> _loadSavedEntries() async {
+    final box = await Hive.openBox('localMilkSaleBox');
+    final list = box.values.cast<Map>().toList();
+    setState(() {
+      localeSaleList = list
+          .map((e) => LocalMilkSale.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    });
+  }
+
+  Future<void> _saveAllToHive() async {
+    final box = await Hive.openBox('localMilkSaleBox');
+    await box.clear();
+    for (var entry in localeSaleList) {
+      await box.add(entry.toJson());
     }
   }
 
-  String get todayKey => "milkSale_${DateTime.now().toString().substring(0, 10)}";
-
-  void loadSavedEntries() async {
-    final box = await Hive.openBox('localMilkSaleBox');
-    final List list = box.get(todayKey, defaultValue: []) ?? [];
-    setState(() {
-      localeSaleList = List<LocalMilkSale>.from(list.cast<LocalMilkSale>());
-    });
-  }
-
-  void saveToHive() async {
-    final box = await Hive.openBox('localMilkSaleBox');
-    await box.put(todayKey, localeSaleList);
-  }
-
-  void saveInfo() async {
-    if (litersController.text.trim().isEmpty ||
-        amountController.text.trim().isEmpty) {
+  void _addOrUpdateSale() async {
+    if (litersController.text.isEmpty || amountController.text.isEmpty) {
       Fluttertoast.showToast(msg: "Add all required fields");
       return;
     }
-
-    final localMilkSale = LocalMilkSale(
+    final entry = LocalMilkSale(
       customerId: codeController.text,
       adminId: admin.id!,
       date: DateTime.now().toIso8601String(),
@@ -118,69 +103,63 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
           : cowRateController.text),
       totalValue: double.parse(amountController.text),
     );
-    if(editingIndex != null)
-      {
-          localMilkSale.id = localeSaleList[editingIndex!].id;
-      }
-    String isSaved= await LocalMilkSaleService.addLocalMilkSale(localMilkSale);
-
-   if(isSaved == 'Unsuccessful') {
-     print('failed to save');
-      Fluttertoast.showToast(msg: 'failed to save');
-   }
-   else{
-     print('local milk sale id : ${localMilkSale.id}');
-      setState(() {
-         if (editingIndex != null) {
-           localeSaleList[editingIndex!] = localMilkSale;
-           editingIndex = null;
-           Fluttertoast.showToast(msg: "Milk Sale Updated");
-         } else {
-           localMilkSale.id = isSaved;
-           localeSaleList.add(localMilkSale);
-           print('local milk sale id : ${localeSaleList.last.id}');
-          Fluttertoast.showToast(msg: "Milk Sale Saved");
-         }
-       });
-       saveToHive();
-       clearAll();
-     }
-  }
-
-  void deleteEntry(int index) async {
-    bool isDeleted = await LocalMilkSaleService.deleteMilkSale(localeSaleList[index]);
-    if(isDeleted)
-      {
-        setState(() {
-          localeSaleList.removeAt(index);
-        });
-        Fluttertoast.showToast(msg: "Entry deleted");
-      }
-    else{
-      Fluttertoast.showToast(msg: 'Error');
-    }
-
-  }
-
-  void calculateAmount() {
     setState(() {
-      double rate = double.tryParse(
-          (selectedCowBuff == "Buffalo")
-              ? buffaloRateController.text
-              : cowRateController.text) ??
-          0;
-      double liters = double.tryParse(litersController.text) ?? 0;
-      totalValue = rate * liters;
-      amountController.text = totalValue.toStringAsFixed(2);
+      if (editingIndex != null) {
+        localeSaleList[editingIndex!] = entry;
+        editingIndex = null;
+        Fluttertoast.showToast(msg: "Updated");
+      } else {
+        localeSaleList.add(entry);
+        Fluttertoast.showToast(msg: "Saved");
+      }
+    });
+    await _saveAllToHive();
+    _clearForm();
+  }
+
+  void _deleteEntry(int idx) async {
+    final box = await Hive.openBox('localMilkSaleBox');
+    await box.deleteAt(idx);
+    setState(() {
+      localeSaleList.removeAt(idx);
+    });
+    Fluttertoast.showToast(msg: "Deleted");
+  }
+
+  void _calculateAmount() {
+    final liters = double.tryParse(litersController.text) ?? 0;
+    final rate = double.tryParse((selectedCowBuff == "Buffalo")
+        ? buffaloRateController.text
+        : cowRateController.text) ??
+        0;
+    final amt = liters * rate;
+    setState(() {
+      amountController.text = amt.toStringAsFixed(2);
     });
   }
 
-  void clearAll() {
+  void _updateRateProvider() {
+    if (selectedCowBuff == "Buffalo") {
+      Provider.of<BuffaloRatechartProvider>(context, listen: false)
+          .localMilkSaleBuffalo = double.tryParse(buffaloRateController.text) ?? 0;
+    } else {
+      Provider.of<CowRateChartProvider>(context, listen: false)
+          .localMilkSaleCow = double.tryParse(cowRateController.text) ?? 0;
+    }
+  }
+
+  void _clearForm() {
     codeController.clear();
     customerController.clear();
     litersController.clear();
     amountController.clear();
     editingIndex = null;
+    setState(() {
+      selectedType = 'Credit';
+      selectedCowBuff = 'Buffalo';
+      _paymentMethod.setAll(0, [true, false]);
+      _milkTypeToggle.setAll(0, [true, false]);
+    });
   }
 
   @override
@@ -193,6 +172,7 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
+              // Date + Payment
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -212,17 +192,17 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                   Container(
                     decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                        borderRadius: BorderRadius.circular(8)),
                     child: ToggleButtons(
-                      onPressed: (int index) {
+                      onPressed: (idx) {
                         setState(() {
-                          for (int i = 0; i < _paymentMethod.length; i++) {
-                            _paymentMethod[i] = i == index;
+                          for (var i = 0; i < _paymentMethod.length; i++) {
+                            _paymentMethod[i] = i == idx;
                           }
-                          selectedType = (index == 0) ? "Credit" : "Cash";
+                          selectedType = idx == 0 ? 'Credit' : 'Cash';
                         });
                       },
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
                       selectedBorderColor: Colors.blue[100],
                       selectedColor: Colors.black,
                       fillColor: Colors.blue[100],
@@ -243,101 +223,111 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                 ],
               ),
               SizedBox(height: 16),
-              (_paymentMethod[0])
-                  ? Row(
-                children: [
-                  SizedBox(
-                    width: 112,
-                    child: Autocomplete<Customer>(
-                      optionsBuilder: (textEditingValue) {
-                        return customerList
-                            .where((c) => c.code!
-                            .contains(textEditingValue.text))
-                            .toList();
-                      },
-                      displayStringForOption: (c) =>
-                      "${c.code!} - ${c.name!}",
-                      onSelected: (Customer selection) {
-                        codeController.text = selection.code!;
-                        customerController.text = selection.name!;
-                        FocusScope.of(context).unfocus();
-                      },
-                      fieldViewBuilder:
-                          (context, controller, focusNode, _) {
-                        codeController = controller;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            labelText: "Code",
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
+
+              if (selectedType == 'Credit')
+                Row(
+                  children: [
+                    // Code field with Autocomplete (shows "1 - Ramesh" but saves "1")
+                    Expanded(
+                      flex: 1,
+                      child: Autocomplete<Customer>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          return customerList.where((Customer c) {
+                            final query = textEditingValue.text.toLowerCase();
+                            return ('${c.code} - ${c.name}').toLowerCase().contains(query);
+                          }).toList();
+                        },
+                        displayStringForOption: (Customer c) => '${c.code} - ${c.name}',
+                        onSelected: (Customer c) {
+                          setState(() {
+                            codeController.text = c.code!;
+                            customerController.text = c.name!;
+                          });
+                          FocusScope.of(context).requestFocus(quantityFocusNode); // ⬅ move to quantity field
+                        },
+
+                        fieldViewBuilder:
+                            (context, textEditingController, focusNode, onFieldSubmitted) {
+                          textEditingController.text = codeController.text;
+                          return TextField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Code',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (value) {},
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Autocomplete<Customer>(
-                      optionsBuilder: (textEditingValue) {
-                        return customerList
-                            .where((c) => c.name!
-                            .toLowerCase()
-                            .contains(textEditingValue.text
-                            .toLowerCase()))
-                            .toList();
-                      },
-                      displayStringForOption: (c) =>
-                      "${c.code!} - ${c.name!}",
-                      onSelected: (Customer selection) {
-                        codeController.text = selection.code!;
-                        customerController.text = selection.name!;
-                        FocusScope.of(context).unfocus();
-                      },
-                      fieldViewBuilder:
-                          (context, controller, focusNode, _) {
-                        customerController = controller;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            labelText: "Customer Name",
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
+                    SizedBox(width: 10),
+
+                    // Name field with Autocomplete (shows "1 - Ramesh" but saves "Ramesh")
+                    Expanded(
+                      flex: 3,
+                      child: Autocomplete<Customer>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          return customerList.where((Customer c) {
+                            final query = textEditingValue.text.toLowerCase();
+                            return ('${c.code} - ${c.name}').toLowerCase().contains(query);
+                          }).toList();
+                        },
+                        displayStringForOption: (Customer c) => '${c.code} - ${c.name}',
+                        onSelected: (Customer c) {
+                          setState(() {
+                            codeController.text = c.code!;
+                            customerController.text = c.name!;
+                          });
+                        },
+                        fieldViewBuilder:
+                            (context, textEditingController, focusNode, onFieldSubmitted) {
+                          textEditingController.text = customerController.text;
+                          return TextField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Customer Name',
+                              fillColor: Colors.white,
+                              filled: true,
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (value) {},
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              )
-                  : SizedBox(),
+                  ],
+                ),
+
+
               SizedBox(height: 16),
+
+              // Milk Type + Liters
               Row(
                 children: [
                   Container(
                     decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                        borderRadius: BorderRadius.circular(8)),
                     child: ToggleButtons(
-                      onPressed: (int index) {
+                      onPressed: (idx) {
                         setState(() {
-                          for (int i = 0; i < _selectedMilkType.length; i++) {
-                            _selectedMilkType[i] = i == index;
+                          for (var i = 0; i < _milkTypeToggle.length; i++) {
+                            _milkTypeToggle[i] = i == idx;
                           }
-                          selectedCowBuff = (index == 0) ? "Buffalo" : "Cow";
+                          selectedCowBuff = idx == 0 ? 'Buffalo' : 'Cow';
+                          _calculateAmount();
                         });
                       },
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
                       selectedBorderColor: Colors.blue[100],
                       selectedColor: Colors.black,
                       fillColor: Colors.blue[100],
                       color: Colors.black,
-                      isSelected: _selectedMilkType,
+                      isSelected: _milkTypeToggle,
                       children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -355,9 +345,9 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                     child: TextFormField(
                       controller: litersController,
                       decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
                         labelText: 'Liters',
+                        fillColor: Colors.white,
+                        filled: true,
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -365,18 +355,21 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                   ),
                 ],
               ),
+
               SizedBox(height: 16),
+
+              // Rate + Amount
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
-                      controller: (selectedCowBuff == "Buffalo")
+                      controller: selectedCowBuff == 'Buffalo'
                           ? buffaloRateController
                           : cowRateController,
                       decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
                         labelText: 'Rate',
+                        fillColor: Colors.white,
+                        filled: true,
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -387,27 +380,32 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                     child: TextFormField(
                       controller: amountController,
                       decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
                         labelText: 'Amount',
+                        fillColor: Colors.white,
+                        filled: true,
                         border: OutlineInputBorder(),
                       ),
-                      keyboardType: TextInputType.number,
                       readOnly: true,
                     ),
                   ),
                 ],
               ),
+
               SizedBox(height: 16),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CustomWidgets.customButton(text: "Save", onPressed: saveInfo),
                   CustomWidgets.customButton(
-                      text: "Clear", onPressed: clearAll),
+                      text: editingIndex == null ? "Save" : "Update",
+                      onPressed: _addOrUpdateSale),
+                  CustomWidgets.customButton(
+                      text: "Clear", onPressed: _clearForm),
                 ],
               ),
+
               SizedBox(height: 16),
+
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
@@ -438,41 +436,45 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                         label: Text("Delete",
                             style: TextStyle(color: Colors.white))),
                   ],
-                  rows: List.generate(localeSaleList.length, (index) {
-                    final entry = localeSaleList[index];
+                  rows: List.generate(localeSaleList.length, (i) {
+                    final e = localeSaleList[i];
                     return DataRow(cells: [
-                      DataCell(Text(entry.customerId ?? "")),
-                      DataCell(Text(entry.milkType ?? "")),
-                      DataCell(Text(entry.paymentType)),
-                      DataCell(Text(entry.quantity.toStringAsFixed(2))),
-                      DataCell(Text(entry.totalValue.toStringAsFixed(2))),
+                      DataCell(Text(e.customerId ?? "")),
+                      DataCell(Text(e.milkType)),
+                      DataCell(Text(e.paymentType)),
+                      DataCell(Text(e.quantity.toStringAsFixed(2))),
+                      DataCell(Text(e.totalValue.toStringAsFixed(2))),
                       DataCell(IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () {
                           setState(() {
-                            editingIndex = index;
+                            editingIndex = i;
+                            codeController.text = e.customerId ?? "";
+                            final customer = customerList.firstWhere(
+                                  (c) => c.code == e.customerId,
+                              orElse: () => Customer(code: '', name: ''),
+                            );
+                            customerController.text = customer.name ?? '';
+
                             litersController.text =
-                                entry.quantity.toStringAsFixed(2);
+                                e.quantity.toStringAsFixed(2);
                             amountController.text =
-                                entry.totalValue.toStringAsFixed(2);
-                            selectedCowBuff = entry.milkType ?? "Buffalo";
-                            selectedType = entry.paymentType;
-                            codeController.text = entry.customerId ?? "";
-                            customerController.text = CustomWidgets.searchCustomerById(entry.customerId!, "Code").first.name!;
-                            _paymentMethod[0] = selectedType == "Credit";
-                            _paymentMethod[1] = selectedType == "Cash";
-                            _selectedMilkType[0] =
-                                selectedCowBuff == "Buffalo";
-                            _selectedMilkType[1] = selectedCowBuff == "Cow";
+                                e.totalValue.toStringAsFixed(2);
+                            selectedType = e.paymentType;
+                            selectedCowBuff = e.milkType;
+                            for (int k = 0; k < _paymentMethod.length; k++) {
+                              _paymentMethod[k] = (k == (e.paymentType == 'Credit' ? 0 : 1));
+                            }
+                            for (int k = 0; k < _milkTypeToggle.length; k++) {
+                              _milkTypeToggle[k] =
+                              (k == (e.milkType == 'Buffalo' ? 0 : 1));
+                            }
                           });
                         },
                       )),
                       DataCell(IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          deleteEntry(index);
-                        },
-                      )),
+                          icon: Icon(Icons.delete),
+                          onPressed: () => _deleteEntry(i))),
                     ]);
                   }),
                 ),

@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:take8/widgets/appbar.dart';
 import 'package:take8/widgets/privacypolicy.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ContactProfilePage extends StatelessWidget {
-  final String website = "https://newbinarysolutions.netlify.app/";
-  final String email = "binarykop@gmail.com";
-  final String phone = "+918830680317"; // No space, no +91
-  final String address = "New Binary Solutions, Flat No.103, Atharva Skylines, Near Coforge Ltd, Ujalaiwadi, Kolhapur - 416004";
-  final String mapsUrl = "https://www.google.com/maps/search/?api=1&query=New+Binary+Solutions,+Flat+No.103,+Atharva+Skylines,+Near+Coforge+Ltd,+Ujalaiwadi,+Kolhapur+-+416004";
+  // ────────────────────────────────────────────────────────────────────
+  // Company constants
+  final String website   = "https://newbinarysolutions.netlify.app/";
+  final String email     = "binarykop@gmail.com";
+  final String phone     = "+918830680317"; // no spaces
+  final String address   =
+      "New Binary Solutions, Flat No.103, Atharva Skylines, Near Coforge Ltd, Ujalaiwadi, Kolhapur - 416004";
+  final String mapsUrl   =
+      "https://www.google.com/maps/search/?api=1&query=New+Binary+Solutions,+Flat+No.103,+Atharva+Skylines,+Near+Coforge+Ltd,+Ujalaiwadi,+Kolhapur+-+416004";
+  final String youtubeUrl = "https://www.youtube.com/@NewBinarySolutions"; // NEW
 
+  // ────────────────────────────────────────────────────────────────────
+  // Launch helpers
   Future<void> _launchPhone() async {
-    final Uri url = Uri.parse("tel:$phone");
+    final url = Uri.parse("tel:$phone");
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -20,10 +27,10 @@ class ContactProfilePage extends StatelessWidget {
   }
 
   Future<void> _launchEmail() async {
-    final Uri emailUri = Uri(
+    final emailUri = Uri(
       scheme: 'mailto',
       path: email,
-      query: 'subject=Contact&body=Hello', // Optional: default subject/body
+      query: 'subject=Contact&body=Hello',
     );
     if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri, mode: LaunchMode.externalApplication);
@@ -33,7 +40,7 @@ class ContactProfilePage extends StatelessWidget {
   }
 
   Future<void> _launchWebsite() async {
-    final Uri url = Uri.parse(website);
+    final url = Uri.parse(website);
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -42,7 +49,7 @@ class ContactProfilePage extends StatelessWidget {
   }
 
   Future<void> _launchMaps() async {
-    final Uri url = Uri.parse(mapsUrl);
+    final url = Uri.parse(mapsUrl);
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -50,6 +57,16 @@ class ContactProfilePage extends StatelessWidget {
     }
   }
 
+  Future<void> _launchYouTube() async { // NEW
+    final url = Uri.parse(youtubeUrl);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch YouTube';
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,63 +77,63 @@ class ContactProfilePage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.blue,
                 child: Icon(Icons.business, size: 50, color: Colors.white),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.call, size: 30),
+                    icon: const Icon(Icons.call, size: 30),
                     onPressed: _launchPhone,
                   ),
                   IconButton(
-                    icon: Icon(Icons.email, size: 30),
+                    icon: const Icon(Icons.email, size: 30),
                     onPressed: _launchEmail,
                   ),
-                  IconButton(
-                    icon: Icon(Icons.ondemand_video, size: 30),
-                    onPressed: _launchWebsite,
+                  IconButton( // YouTube button
+                    icon: const Icon(Icons.ondemand_video, size: 30),
+                    onPressed: _launchYouTube,
                   ),
                   IconButton(
-                    icon: Icon(Icons.privacy_tip, size: 30),
+                    icon: const Icon(Icons.privacy_tip, size: 30),
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PrivacyPolicy()),
+                        MaterialPageRoute(builder: (_) => PrivacyPolicy()),
                       );
                     },
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Card(
                 child: ListTile(
-                  title: Text("Email"),
+                  title: const Text("Email"),
                   subtitle: Text(email),
                   onTap: _launchEmail,
                 ),
               ),
               Card(
                 child: ListTile(
-                  title: Text("Phone"),
+                  title: const Text("Phone"),
                   subtitle: Text(phone),
                   onTap: _launchPhone,
                 ),
               ),
               Card(
                 child: ListTile(
-                  title: Text("Website"),
+                  title: const Text("Website"),
                   subtitle: Text(website),
                   onTap: _launchWebsite,
                 ),
               ),
               Card(
                 child: ListTile(
-                  title: Text("Address"),
+                  title: const Text("Address"),
                   subtitle: Text(address),
                   onTap: _launchMaps,
                 ),
