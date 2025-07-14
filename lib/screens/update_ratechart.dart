@@ -137,6 +137,16 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                     ),
                     SizedBox(height: 20),
                     CustomWidgets.customButton(text: "save", onPressed: () {
+                      if(minimumCowFatController.text.isEmpty || minimumCowSNFController.text.isEmpty ||
+                          minimumCowRateController.text.isEmpty ||
+                          maximumCowFatController.text.isEmpty ||
+                          maximumCowSNFController.text.isEmpty ||
+                          maximumCowRateController.text.isEmpty
+                      )
+                        {
+                          Fluttertoast.showToast(msg: "Add all values");
+                          return;
+                        }
                       rateChartModel.setValues(
                         minimumCowFatController.text == "" ? "" : textToDouble(minimumCowFatController.text),
                         textToDouble(minimumCowSNFController.text),
@@ -145,6 +155,7 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                         textToDouble(maximumCowSNFController.text),
                         textToDouble(maximumCowRateController.text),
                       );
+
                       Fluttertoast.showToast(msg: "saved",backgroundColor: Colors.green);
                     })
                   ],
@@ -207,6 +218,17 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                     ),
                     SizedBox(height: 20),
                     CustomWidgets.customButton(text: "save", onPressed: () {
+
+                      if(minimumBuffaloFatController.text.isEmpty || minimumBuffaloSNFController.text.isEmpty ||
+                          minimumBuffaloRateController.text.isEmpty ||
+                          maximumBuffaloFatController.text.isEmpty ||
+                          maximumBuffaloSNFController.text.isEmpty ||
+                          maximumBuffaloRateController.text.isEmpty
+                      )
+                      {
+                        Fluttertoast.showToast(msg: "Add all values");
+                        return;
+                      }
                       rateChartModel.setValues(
                         textToDouble(minimumBuffaloFatController.text),
                         textToDouble(minimumBuffaloSNFController.text),

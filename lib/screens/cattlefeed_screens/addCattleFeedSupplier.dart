@@ -189,14 +189,14 @@ class _AddSupplierScreenState extends State<AddSupplierScreen>{
           phoneNo: mobileController.text,
           alternatePhoneNo: alternativemobileController.text,
           email: emailController.text,
-          //accountNo: accountNumberController.text,
           bankCode: bankCodeController.text,
           sabhasadNo: sabhasadNumberController.text,
           bankBranchName: bankBranchNameController.text,
           bankAccountNo: bankAccountNumberController.text,
           ifscCode: ifscCodeController.text,
           adharNo: aadharController.text,
-          panNo:panController.text
+          panNo:panController.text,
+          adminId: admin.id
       );
       if( isDeviceConnected) {
         if(await CattleFeedSupplierService.addCattleFeedSupplier(cattleFeedSupplier))
@@ -410,7 +410,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen>{
           fillColor: Colors.white,
           border: OutlineInputBorder(),
         ),
-        validator: validator, // Apply validation if provided
+     //   validator: validator, // Apply validation if provided
       ),
     );
   }

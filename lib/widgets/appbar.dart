@@ -288,9 +288,7 @@ class CustomWidgets {
 
   // Get IP method (unchanged as requested)
   static String getIp() {
-   return "https://backend-dairy-nefj.onrender.com";
-   // return "http://192.168.219.80:8080";
-   // return "http://192.168.92.55:8080";
+ //  return "https://backend-dairy-nefj.onrender.com";
    return "http://192.168.43.55:8080";
   }
 

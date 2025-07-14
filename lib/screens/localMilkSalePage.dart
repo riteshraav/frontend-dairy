@@ -41,7 +41,7 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
   Admin admin = CustomWidgets.currentAdmin();
   double localMilkSaleRateBuffalo = 0;
   double localMilkSaleRateCow = 0;
-
+  bool loading = false;
   @override
   void initState() {
     super.initState();
@@ -87,10 +87,18 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
   String get todayKey => "milkSale_${DateTime.now().toString().substring(0, 10)}";
 
   void loadSavedEntries() async {
-    final box = await Hive.openBox('localMilkSaleBox');
-    final List list = box.get(todayKey, defaultValue: []) ?? [];
     setState(() {
-      localeSaleList = List<LocalMilkSale>.from(list.cast<LocalMilkSale>());
+      loading = true;
+    });
+   List<LocalMilkSale>? list = await LocalMilkSaleService.getDateEntries(DateTime.now().toIso8601String(),admin.id!);
+    if(list == null)
+      {
+        Fluttertoast.showToast(msg: "Something went wrong");
+        return;
+      }
+    setState(() {
+      localeSaleList = list;
+      loading = false;
     });
   }
 
@@ -408,6 +416,14 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                 ],
               ),
               SizedBox(height: 16),
+              loading?
+                Column(
+          children: [
+            Text("local sale loading.."),
+            SizedBox(height: 16,),
+            CircularProgressIndicator()
+        ],
+      ):
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(

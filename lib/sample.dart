@@ -179,7 +179,6 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                         ],
                       ),
                     ),
-
                   ]
 
               ),
