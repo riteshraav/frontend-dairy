@@ -2,177 +2,223 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
-import 'package:take8/model/admin.dart';
 import 'package:take8/model/cow_rate_data.dart';
-import 'package:take8/widgets/appbar.dart';
 import '../model/ratechartinfo.dart';
 
+/// CowRateChartProvider
+/// --------------------
+/// Maintains the cow‑rate chart, its Excel grid, and the six limit values
+/// (min/max fat, SNF, and fallback rate).
+///
+/// *Default limits baked into the code as requested:*
+///   * Minimum – Fat *2.0, SNF **7.50, Rate **20.30*
+///   * Maximum – Fat *5.0, SNF **9.0,  Rate **33.80*
+///
+/// The limits can still be overridden at runtime with setValues().
 @HiveType(typeId: 11)
 class CowRateChartProvider extends ChangeNotifier {
-
+  // ────────────────────────────────────────────────────────────────────────
+  // Excel data & meta
   List<List<String>> excelData = [];
   bool filePicked = false;
-  List<RateChartInfo> rateChartHistory  = [];
+  List<RateChartInfo> rateChartHistory = [];
+
   int? row;
   int? col;
   String name = "";
-  double? minimumCowFat ;
-  double? minimumCowSNF ;
-  double? minimumCowRate;
-  double? maximumCowFat;
-  double? maximumCowSNF;
-  double? maximumCowRate;
-  double localMilkSaleCow=0;
 
-  // Constructor
+  // ────────────────────────────────────────────────────────────────────────
+  // Limit values (defaults)
+  double? minimumCowFat   = 2.0;
+  double? minimumCowSNF   = 7.50;
+  double? minimumCowRate  = 20.30;
+
+  double? maximumCowFat   = 5.0;
+  double? maximumCowSNF   = 9.0;
+  double? maximumCowRate  = 33.80;
+
+  double localMilkSaleCow = 0;
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Constructor – lets you override defaults if needed
   CowRateChartProvider({
     this.row,
     this.col,
     this.name = "",
-    this.minimumCowFat,
-    this.minimumCowSNF,
-    this.minimumCowRate,
-    this.maximumCowFat,
-    this.maximumCowSNF,
-    this.maximumCowRate,
+    double? minimumCowFat,
+    double? minimumCowSNF,
+    double? minimumCowRate,
+    double? maximumCowFat,
+    double? maximumCowSNF,
+    double? maximumCowRate,
     this.localMilkSaleCow = 0,
-  });
-  void setValues(
-   var minimumCowFat,
-   var minimumCowSNF,
-   var minimumCowRate,
-   var maximumCowFat,
-   var maximumCowSNF,
-   var maximumCowRate,
-      )async {
-    this.minimumCowFat = minimumCowFat;
-    this.minimumCowSNF = minimumCowSNF;
-    this.minimumCowRate = minimumCowRate;
-    this.maximumCowFat = maximumCowFat;
-    this.maximumCowSNF=maximumCowSNF;
-    this.maximumCowRate=maximumCowRate;
+  }) {
+    if (minimumCowFat   != null) this.minimumCowFat   = minimumCowFat;
+    if (minimumCowSNF   != null) this.minimumCowSNF   = minimumCowSNF;
+    if (minimumCowRate  != null) this.minimumCowRate  = minimumCowRate;
+    if (maximumCowFat   != null) this.maximumCowFat   = maximumCowFat;
+    if (maximumCowSNF   != null) this.maximumCowSNF   = maximumCowSNF;
+    if (maximumCowRate  != null) this.maximumCowRate  = maximumCowRate;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Manually override limits at runtime
+  Future<void> setValues(
+      double minimumCowFat,
+      double minimumCowSNF,
+      double minimumCowRate,
+      double maximumCowFat,
+      double maximumCowSNF,
+      double maximumCowRate,
+      ) async {
+    this.minimumCowFat   = minimumCowFat;
+    this.minimumCowSNF   = minimumCowSNF;
+    this.minimumCowRate  = minimumCowRate;
+
+    this.maximumCowFat   = maximumCowFat;
+    this.maximumCowSNF   = maximumCowSNF;
+    this.maximumCowRate  = maximumCowRate;
     notifyListeners();
   }
-  List<dynamic> getCowValues()
-  {
-    List<dynamic> list = [];
-    list.add(minimumCowFat ?? "");
-    list.add(minimumCowSNF?? "");
-    list.add(minimumCowRate?? "");
-    list.add(maximumCowFat?? "");
-    list.add(maximumCowSNF?? "");
-    list.add(maximumCowRate?? "");
-    return list;
-  }
-  void updateAll(CowRateData cowRateData){
-    excelData = cowRateData.excelData;
-    rateChartHistory = cowRateData.rateChartHistory ?? [];
-    filePicked = cowRateData.filePicked;
-    name = cowRateData.name;
-    maximumCowFat = cowRateData.maximumCowFat;
-    maximumCowSNF = cowRateData.maximumCowSNF;
-    maximumCowRate = cowRateData.maximumCowRate;
-    minimumCowFat = cowRateData.minimumCowFat;
-    minimumCowSNF = cowRateData.minimumCowSNF;
-    minimumCowRate = cowRateData.minimumCowRate;
-    localMilkSaleCow = cowRateData.morningQuantity;
-    notifyListeners();
 
-  }
-  void updateExcelData(List<List<String>> updatedExcelData,int row, int col)async{
-    excelData = updatedExcelData.map((row) => List<String>.from(row)).toList();
-    RateChartInfo  rateChartInfo = RateChartInfo( note: 'Updated Rate chart', rateChart: updatedExcelData, row: row, col: col,date: DateTime.now().toIso8601String());
-    rateChartHistory.add(rateChartInfo);
-    print("notified all about update of the exceldata");
+  // Convenience getter for UI forms
+  List<dynamic> getCowValues() => [
+    minimumCowFat ?? "",
+    minimumCowSNF ?? "",
+    minimumCowRate ?? "",
+    maximumCowFat ?? "",
+    maximumCowSNF ?? "",
+    maximumCowRate ?? "",
+  ];
 
-    if(rateChartHistory.length > 20)
-      {
-        List<String> keys =  rateChartHistory.map((rateChart)=>rateChart.date).toList();
-        keys.sort((a,b)=>DateTime.parse(a).compareTo(DateTime.parse(b)));
-          rateChartHistory.remove(keys.first);
-      }
+  // ────────────────────────────────────────────────────────────────────────
+  // Hydrate provider from Hive model
+  void updateAll(CowRateData data) {
+    excelData            = data.excelData;
+    rateChartHistory     = data.rateChartHistory ?? [];
+    filePicked           = data.filePicked;
+    name                 = data.name;
+
+    minimumCowFat        = data.minimumCowFat;
+    minimumCowSNF        = data.minimumCowSNF;
+    minimumCowRate       = data.minimumCowRate;
+    maximumCowFat        = data.maximumCowFat;
+    maximumCowSNF        = data.maximumCowSNF;
+    maximumCowRate       = data.maximumCowRate;
+
+    localMilkSaleCow     = data.morningQuantity;
     notifyListeners();
   }
-  void retrieveFromRateChartHistory(String date)
-  {
-   excelData =  rateChartHistory.where((rateChart)=>rateChart.date == date).first.rateChart;
 
+  // Convert current state to a CowRateData object
+  CowRateData toCowRateData() {
+    return CowRateData()
+      ..excelData          = excelData
+      ..rateChartHistory   = rateChartHistory
+      ..filePicked         = filePicked
+      ..name               = name
+      ..minimumCowFat      = minimumCowFat
+      ..minimumCowSNF      = minimumCowSNF
+      ..minimumCowRate     = minimumCowRate
+      ..maximumCowFat      = maximumCowFat
+      ..maximumCowSNF      = maximumCowSNF
+      ..maximumCowRate     = maximumCowRate
+      ..morningQuantity    = localMilkSaleCow;
   }
-  /// Function to pick an Excel file and convert it to List<List<String>>
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Update Excel grid & take a snapshot
+  void updateExcelData(List<List<String>> updated, int row, int col) {
+    excelData = updated.map((r) => List<String>.from(r)).toList();
+    rateChartHistory.add(
+      RateChartInfo(
+        note: 'Updated Rate chart',
+        rateChart: updated,
+        row: row,
+        col: col,
+        date: DateTime.now().toIso8601String(),
+      ),
+    );
+
+    // Keep only the latest 20 snapshots
+    if (rateChartHistory.length > 20) {
+      rateChartHistory.sort((a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)));
+      rateChartHistory.removeAt(0);
+    }
+    notifyListeners();
+  }
+
+  // Retrieve a specific snapshot (by ISO date string)
+  void retrieveFromRateChartHistory(String date) {
+    excelData = rateChartHistory.firstWhere((e) => e.date == date).rateChart;
+    notifyListeners();
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // File picker → Excel → excelData
   Future<void> pickExcelFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
 
-      // Pick an Excel file
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'], // Allow only Excel files
-      );
+    if (result != null && result.files.single.path != null) {
+      final filePath = result.files.single.path!;
+      final bytes    = File(filePath).readAsBytesSync();
+      final excel    = Excel.decodeBytes(bytes);
 
-      if (result != null && result.files.single.path != null) {
-        String filePath = result.files.single.path!;
-
-        // Read the Excel file
-        var bytes = File(filePath).readAsBytesSync();
-        var excel = Excel.decodeBytes(bytes);
-         name =  result.files.single.name;
-        // Convert Excel data to List<List<String>>
-        //List<List<String>> data = [];
-        excelData = [];
-        for (var sheetName in excel.tables.keys) {
-          var sheet = excel.tables[sheetName];
-          if (sheet != null) {
-            for (var row in sheet.rows) {
-              excelData.add(row.map((cell) => cell?.value?.toString() ?? '').toList());
-            }
-          }
+      name = result.files.single.name;
+      excelData = [];
+      for (final sheet in excel.tables.values) {
+        for (final row in sheet!.rows) {
+          excelData.add(row.map((c) => c?.value?.toString() ?? '').toList());
         }
-        if(searchValue("2.00")) {
-          print('row is $row col is $col');
+      }
+
+      if (searchValue("2.00")) {
         filePicked = true;
-          RateChartInfo  rateChartInfo = RateChartInfo(note:  'New Rate chart', rateChart: excelData, row: row!, col: col!,date: DateTime.now().toIso8601String());
-          rateChartHistory.add(rateChartInfo);
-
-        }
-        print("notified all about picked in exceldata");
-        notifyListeners();
+        rateChartHistory.add(
+          RateChartInfo(
+            note: 'New Rate chart',
+            rateChart: excelData,
+            row: row!,
+            col: col!,
+            date: DateTime.now().toIso8601String(),
+          ),
+        );
       }
+      notifyListeners();
     }
-
-  /// Function to search for the first occurrence of 2.00
-  bool searchValue(String searchValue) {
-      for (int rowIndex = 0; rowIndex < excelData.length; rowIndex++) {
-        for (int colIndex = 0; colIndex < excelData[rowIndex].length; colIndex++) {
-          if (excelData[rowIndex][colIndex] == searchValue) {
-            {
-              row = rowIndex;
-              col = colIndex;
-              return true;
-            }
-
-          }
-        }
-      }
-      print("2.00 not found in cow rate chart");
-      return false;
   }
-  double findRate(double fat,double snf){
-    if((minimumCowFat != null && minimumCowSNF != null) && fat < minimumCowFat! || snf < minimumCowSNF!)
-      {
-        return minimumCowRate!;
+
+  // Locate the first cell containing value and store row/col
+  bool searchValue(String value) {
+    for (int r = 0; r < excelData.length; r++) {
+      for (int c = 0; c < excelData[r].length; c++) {
+        if (excelData[r][c] == value) {
+          row = r;
+          col = c;
+          return true;
+        }
       }
-    else if( (maximumCowFat != null && maximumCowSNF != null ) && fat > maximumCowFat! || snf > maximumCowSNF!)
-      {
-        return maximumCowRate!;
-      }
-    else{
-      print("row = $row fat = ${fat}  col = ${col}  snf = ${snf}");
-      int excelRow = (row! + ((fat - 2)*10).round());
-      int excelCol = ((1+col!+ (snf-7.5)*10).round());
-      print("excel row $excelRow  excel col $excelCol" );
-      print("snf is ${excelData[excelRow][col!]}");
-      print("fat is ${excelData[row!][excelCol]}");
-      return double.parse(excelData[excelRow][excelCol]);
     }
+    return false;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Calculate rate for given fat & snf
+  double findRate(double fat, double snf) {
+    if ((fat < (minimumCowFat ?? 0)) || (snf < (minimumCowSNF ?? 0))) {
+      return minimumCowRate!;
+    }
+    if ((fat > (maximumCowFat ?? double.infinity)) || (snf > (maximumCowSNF ?? double.infinity))) {
+      return maximumCowRate!;
+    }
+
+    final excelRow = row! + ((fat - 2) * 10).round();
+    final excelCol = col! + 1 + ((snf - 7.5) * 10).round();
+
+    return double.parse(excelData[excelRow][excelCol]);
   }
 }

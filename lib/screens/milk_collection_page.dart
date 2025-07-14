@@ -331,20 +331,43 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
     double eveningBuffaloQuantity = Provider.of<QuantityProvider>(context).eveningBuffaloQuantity;
     double eveningCowQuantity = Provider.of<QuantityProvider>(context).eveningCowQuantity;
     return Scaffold(
-      appBar: CustomWidgets.buildAppBar("Milk Collection",[
+      appBar: CustomWidgets.buildAppBar("Milk Collection", [
         Padding(
-          padding: const EdgeInsets.only(left: 8.0,right: 8.0),
-          child: Text(((DateTime.now().hour<=14)?morningBuffaloQuantity:eveningBuffaloQuantity).toStringAsFixed(2),
-            style: TextStyle(color: Colors.white,fontSize: 25),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[300], // Silver background
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              ((DateTime.now().hour <= 14)
+                  ? morningBuffaloQuantity
+                  : eveningBuffaloQuantity)
+                  .toStringAsFixed(2),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 20),
+            ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 8.0,right: 8.0),
-          child: Text(((DateTime.now().hour<=14)?morningCowQuantity:eveningCowQuantity).toStringAsFixed(2),
-              style: TextStyle(color: Colors.white,fontSize: 25)
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[300], // Silver background
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              ((DateTime.now().hour <= 14)
+                  ? morningCowQuantity
+                  : eveningCowQuantity)
+                  .toStringAsFixed(2),
+              style: const TextStyle(color: Colors.blueAccent, fontSize: 20),
+            ),
           ),
-        )
+        ),
       ]),
+
       drawer: CustomDrawer(),
       backgroundColor: Colors.blue[50],
       body: Column(

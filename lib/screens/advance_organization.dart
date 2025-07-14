@@ -19,73 +19,76 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   TextEditingController addAmountController = TextEditingController();
   TextEditingController currentBalanceController = TextEditingController();
   Admin admin = CustomWidgets.currentAdmin();
-  double currentBalance =0;
+  double currentBalance = 0;
   var advanceOrganizationBox = Hive.box<List<AdvanceOrganization>>('advanceOrganizationBox');
   List<AdvanceOrganization> advanceOrganizationList = [];
+
   @override
   void initState() {
     super.initState();
-    loadData();
     dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    currentBalance = admin.currentBalance??0;
-    currentBalanceController.text = admin.currentBalance.toString();
+    currentBalance = admin.currentBalance ?? 0;
+    currentBalanceController.text = currentBalance.toString();
+    loadData();
   }
-  void loadData()async{
-   List<AdvanceOrganization> list = await AdvanceOrganizationService.getAdvanceOrganization(admin.id!);
-   setState(() {
-     advanceOrganizationList.addAll(list);
-   });
-   print( advanceOrganizationList.length);
-   print("'''''''''''''''''''''''object'''''''''''''''''''''''");
+
+  void loadData() async {
+    List<AdvanceOrganization> hiveList = advanceOrganizationBox.get('advanceOrganization') ?? [];
+
+    if (hiveList.isNotEmpty) {
+      setState(() {
+        advanceOrganizationList = hiveList;
+      });
+    } else {
+      List<AdvanceOrganization> list = await AdvanceOrganizationService.getAdvanceOrganization(admin.id!);
+      setState(() {
+        advanceOrganizationList = list;
+      });
+      advanceOrganizationBox.put('advanceOrganization', list);
+    }
   }
-  void _saveData()async{
+
+  void _saveData() async {
     double addAmount = double.tryParse(addAmountController.text) ?? 0;
     double previousBalance = currentBalance;
-     currentBalance = currentBalance + addAmount;
-    print(previousBalance);
-    print(addAmount);
-    print(currentBalance);
+    currentBalance = currentBalance + addAmount;
+
     AdvanceOrganization advanceOrganization = AdvanceOrganization(
       date: DateTime.now().toIso8601String(),
       previousBalance: previousBalance,
       addAmount: addAmount,
       totalBalance: currentBalance,
-      adminId: admin.id!
+      adminId: admin.id!,
     );
-    print("admain organization ${advanceOrganization.adminId}");
-    bool isAdvanceOrganizationUpdated = await AdvanceOrganizationService.addAdvanceOrganization(advanceOrganization);
- if(isAdvanceOrganizationUpdated)
-   {
-     setState(()  {
 
-       advanceOrganizationList.add(advanceOrganization);
-       advanceOrganizationBox.put('advanceOrganization',advanceOrganizationList);
-       addAmountController.clear();
-       currentBalanceController.text = currentBalance.toString();
-       admin.currentBalance = currentBalance;
-     });
-     bool? isAdminUpdated = await CustomWidgets.updateAdmin(admin,context);
-     if(isAdminUpdated == null)
-     {
-       // Navigator.of(context).pushAndRemoveUntil(
-       //   MaterialPageRoute(builder: (context) => LoginPage()),
-       //       (route) => false, // Clears entire stack
-       // );
-       Fluttertoast.showToast(msg: "null");
-       return;
-     }
-     Fluttertoast.showToast(msg: "saved");
-   }
- else{
-   Fluttertoast.showToast(msg: "error");
- }
+    bool isAdvanceOrganizationUpdated =
+    await AdvanceOrganizationService.addAdvanceOrganization(advanceOrganization);
 
+    if (isAdvanceOrganizationUpdated) {
+      setState(() {
+        advanceOrganizationList.add(advanceOrganization);
+        advanceOrganizationBox.put('advanceOrganization', advanceOrganizationList);
+        addAmountController.clear();
+        currentBalanceController.text = currentBalance.toString();
+        admin.currentBalance = currentBalance;
+      });
 
+      bool? isAdminUpdated = await CustomWidgets.updateAdmin(admin, context);
+      if (isAdminUpdated == null) {
+        Fluttertoast.showToast(msg: "null");
+        return;
+      }
+
+      Fluttertoast.showToast(msg: "saved");
+    } else {
+      Fluttertoast.showToast(msg: "error");
+    }
   }
 
-  void _editData(int index, AdvanceOrganization org) async{
+  void _editData(int index, AdvanceOrganization org) async {
     TextEditingController addAmountEditController =
     TextEditingController(text: org.addAmount.toString());
+
     showDialog(
       context: context,
       builder: (context) {
@@ -106,38 +109,36 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF24A1DE),
                 foregroundColor: Colors.white,
-              ) ,
+              ),
               onPressed: () {
-                if(addAmountEditController.text != "")
-              {
-                print("in");
-                double newAddAmount =
-                    double.tryParse(addAmountEditController.text) ?? org.addAmount;
-                double newTotalBalance = org.previousBalance + newAddAmount;
-                AdvanceOrganization advanceOrganization = AdvanceOrganization(
-                  adminId: admin.id!,
-                  date: org.date,
-                  previousBalance: org.previousBalance,
-                  addAmount: newAddAmount,
-                  totalBalance: newTotalBalance,
-                );
+                if (addAmountEditController.text != "") {
+                  double newAddAmount =
+                      double.tryParse(addAmountEditController.text) ?? org.addAmount;
+                  double newTotalBalance = org.previousBalance + newAddAmount;
 
-                setState(() {
-                  List<AdvanceOrganization> list = advanceOrganizationList.reversed.toList();
-                  list[index] = advanceOrganization;
-                  advanceOrganizationList = list.reversed.toList();
-                  admin.currentBalance = newTotalBalance;
-                  currentBalance = newTotalBalance;
-                  currentBalanceController.text = currentBalance.toString();
+                  AdvanceOrganization updatedOrg = AdvanceOrganization(
+                    adminId: org.adminId,
+                    date: org.date,
+                    previousBalance: org.previousBalance,
+                    addAmount: newAddAmount,
+                    totalBalance: newTotalBalance,
+                  );
 
-                  advanceOrganizationList.add(advanceOrganization);
-                  advanceOrganizationBox.put('advanceOrganization',advanceOrganizationList);
-                });
-                updateAdmin();
+                  setState(() {
+                    List<AdvanceOrganization> list = advanceOrganizationList.reversed.toList();
+                    list[index] = updatedOrg;
+                    advanceOrganizationList = list.reversed.toList();
 
-                Navigator.pop(context);
-              }
-                else{
+                    currentBalance = newTotalBalance;
+                    admin.currentBalance = newTotalBalance;
+                    currentBalanceController.text = currentBalance.toString();
+
+                    advanceOrganizationBox.put('advanceOrganization', advanceOrganizationList);
+                  });
+
+                  updateAdmin();
+                  Navigator.pop(context);
+                } else {
                   Fluttertoast.showToast(msg: "Add amount");
                 }
               },
@@ -147,24 +148,19 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         );
       },
     );
-
   }
-  void updateAdmin()async{
-    bool? isAdminUpdated = await CustomWidgets.updateAdmin(admin,context);
-    if(isAdminUpdated == null)
-    {
-      // Navigator.of(context).pushAndRemoveUntil(
-      //   MaterialPageRoute(builder: (context) => LoginPage()),
-      //       (route) => false, // Clears entire stack
-      // );
+
+  void updateAdmin() async {
+    bool? isAdminUpdated = await CustomWidgets.updateAdmin(admin, context);
+    if (isAdminUpdated == null) {
       return;
     }
   }
-  void _deleteData(int index) {
 
+  void _deleteData(int index) {
     setState(() {
-      advanceOrganizationList.removeAt(index);
-      advanceOrganizationBox.put('advanceOrganization',advanceOrganizationList);
+      advanceOrganizationList.removeAt(advanceOrganizationList.length - 1 - index);
+      advanceOrganizationBox.put('advanceOrganization', advanceOrganizationList);
     });
   }
 
@@ -208,25 +204,19 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                 filled: true,
                 border: OutlineInputBorder(),
               ),
-            //  onChanged: (_) => _updateTotalBalance(),
             ),
             SizedBox(height: 10),
-            // ElevatedButton(
-            //   onPressed: _saveData,
-            //   child: Text("Add"),
-            // ),
-            CustomWidgets.customButton(text: "Add", onPressed:_saveData),
+            CustomWidgets.customButton(text: "Add", onPressed: _saveData),
             SizedBox(height: 20),
             SingleChildScrollView(
-              scrollDirection: Axis.horizontal, // Enables horizontal scrolling
+              scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
-                scrollDirection: Axis.vertical, // Enables vertical scrolling
+                scrollDirection: Axis.vertical,
                 child: DataTable(
                   border: TableBorder.all(color: Colors.black, width: 1),
                   columnSpacing: 10,
                   headingRowColor: WidgetStateProperty.all(Color(0xFF24A1DE)),
                   dataRowColor: WidgetStateProperty.all(Colors.white),
-
                   columns: [
                     DataColumn(label: Text("Date", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white))),
                     DataColumn(label: Text("Pre Bal", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white))),
@@ -235,7 +225,6 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                     DataColumn(label: Text("Edit", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white))),
                     DataColumn(label: Text("Delete", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white))),
                   ],
-
                   rows: List.generate(
                     advanceOrganizationList.length,
                         (index) {
@@ -257,8 +246,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                       ]);
                     },
                   ),
-                )
-
+                ),
               ),
             ),
           ],

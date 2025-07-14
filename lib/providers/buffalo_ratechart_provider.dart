@@ -4,218 +4,218 @@ import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
 import 'package:hive/hive.dart';
 import 'package:take8/model/buffalo_rate_data.dart';
-
 import '../model/admin.dart';
 import '../model/ratechartinfo.dart';
 import '../widgets/appbar.dart';
 import 'cow_ratechart_provider.dart';
 
+/// BuffaloRatechartProvider
+/// ------------------------
+/// Holds the entire state of the buffalo‑rate chart including the
+/// uploaded Excel table and the six limit values (min/max fat, SNF, rate).
+///
+/// *Default limits* are now hard‑coded as requested:
+///   * *Minimum*  – Fat *3.0, SNF **8.0, Rate **39.80*
+///   * *Maximum*  – Fat *14.90, SNF **10.0, Rate **81.75*
+///
+/// You can still override them at runtime with setValues().
 class BuffaloRatechartProvider extends ChangeNotifier {
+  // ────────────────────────────────────────────────────────────────────────
+  // Excel data & meta
   List<List<String>> excelData = [];
-
   bool filePicked = false;
-
   List<RateChartInfo> rateChartHistory = [];
 
   int? row;
-
   int? col;
-
   String name = "";
 
-  double? minimumBuffaloFat;
+  // ────────────────────────────────────────────────────────────────────────
+  // Limit values (INITIALISED with requested defaults)
+  double? minimumBuffaloFat   = 3.0;
+  double? minimumBuffaloSNF   = 8.0;
+  double? minimumBuffaloRate  = 39.80;
 
-  double? minimumBuffaloSNF;
-
-  double? minimumBuffaloRate;
-
-  double? maximumBuffaloFat;
-
-  double? maximumBuffaloSNF;
-
-  double? maximumBuffaloRate;
+  double? maximumBuffaloFat   = 14.90;
+  double? maximumBuffaloSNF   = 10.0;
+  double? maximumBuffaloRate  = 81.75;
 
   double localMilkSaleBuffalo = 0;
 
-  // Constructor
+  // ────────────────────────────────────────────────────────────────────────
+  // Constructor – optional, you can override defaults here if needed.
   BuffaloRatechartProvider({
     this.row,
     this.col,
     this.name = "",
-    this.minimumBuffaloFat,
-    this.minimumBuffaloSNF,
-    this.minimumBuffaloRate,
-    this.maximumBuffaloFat,
-    this.maximumBuffaloSNF,
-    this.maximumBuffaloRate,
+    double? minimumBuffaloFat,
+    double? minimumBuffaloSNF,
+    double? minimumBuffaloRate,
+    double? maximumBuffaloFat,
+    double? maximumBuffaloSNF,
+    double? maximumBuffaloRate,
     this.localMilkSaleBuffalo = 0,
-  });
-  void updateAll(BuffaloRateData rateData){
-    excelData = rateData.excelData;
-    rateChartHistory= rateData.rateChartHistory ?? [];
-    filePicked = rateData.filePicked;
-    name = rateData.name;
-    maximumBuffaloFat = rateData.maximumBuffaloFat;
-    maximumBuffaloSNF = rateData.maximumBuffaloSNF;
-    maximumBuffaloRate = rateData.maximumBuffaloRate;
-    minimumBuffaloFat = rateData.minimumBuffaloFat;
-    minimumBuffaloSNF = rateData.minimumBuffaloSNF;
-    minimumBuffaloRate = rateData.minimumBuffaloRate;
-    localMilkSaleBuffalo = rateData.localMilkSaleBuffalo!;
+  }) {
+    // If custom values supplied, use them instead of defaults
+    if (minimumBuffaloFat != null) this.minimumBuffaloFat = minimumBuffaloFat;
+    if (minimumBuffaloSNF != null) this.minimumBuffaloSNF = minimumBuffaloSNF;
+    if (minimumBuffaloRate != null) this.minimumBuffaloRate = minimumBuffaloRate;
+    if (maximumBuffaloFat != null) this.maximumBuffaloFat = maximumBuffaloFat;
+    if (maximumBuffaloSNF != null) this.maximumBuffaloSNF = maximumBuffaloSNF;
+    if (maximumBuffaloRate != null) this.maximumBuffaloRate = maximumBuffaloRate;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Update whole object from persisted Hive model
+  void updateAll(BuffaloRateData rateData) {
+    excelData              = rateData.excelData;
+    rateChartHistory       = rateData.rateChartHistory ?? [];
+    filePicked             = rateData.filePicked;
+    name                   = rateData.name;
+    maximumBuffaloFat      = rateData.maximumBuffaloFat;
+    maximumBuffaloSNF      = rateData.maximumBuffaloSNF;
+    maximumBuffaloRate     = rateData.maximumBuffaloRate;
+    minimumBuffaloFat      = rateData.minimumBuffaloFat;
+    minimumBuffaloSNF      = rateData.minimumBuffaloSNF;
+    minimumBuffaloRate     = rateData.minimumBuffaloRate;
+    localMilkSaleBuffalo   = rateData.localMilkSaleBuffalo ?? 0;
     notifyListeners();
   }
-  void setBuffaloRateData()
-  {
-    BuffaloRateData rateData = BuffaloRateData();
-    rateData.excelData = excelData;
-    rateData.rateChartHistory = rateChartHistory;
-    rateData.filePicked = filePicked;
-    rateData.name = name;
-    rateData.maximumBuffaloFat = maximumBuffaloFat;
-    rateData.maximumBuffaloSNF = maximumBuffaloSNF;
-    rateData.maximumBuffaloRate = maximumBuffaloRate;
-    rateData.minimumBuffaloFat = minimumBuffaloFat;
-    rateData.minimumBuffaloSNF = minimumBuffaloSNF;
-    rateData.minimumBuffaloRate = minimumBuffaloRate;
-    rateData.localMilkSaleBuffalo = localMilkSaleBuffalo;
-}
 
+  // Persist current provider state into a BuffaloRateData instance
+  BuffaloRateData toBuffaloRateData() {
+    return BuffaloRateData()
+      ..excelData            = excelData
+      ..rateChartHistory     = rateChartHistory
+      ..filePicked           = filePicked
+      ..name                 = name
+      ..maximumBuffaloFat    = maximumBuffaloFat
+      ..maximumBuffaloSNF    = maximumBuffaloSNF
+      ..maximumBuffaloRate   = maximumBuffaloRate
+      ..minimumBuffaloFat    = minimumBuffaloFat
+      ..minimumBuffaloSNF    = minimumBuffaloSNF
+      ..minimumBuffaloRate   = minimumBuffaloRate
+      ..localMilkSaleBuffalo = localMilkSaleBuffalo;
+  }
 
-
+  // ────────────────────────────────────────────────────────────────────────
+  // Manually override limit values at runtime
   Future<void> setValues(
-      var minimumBuffaloFat,
+      double minimumBuffaloFat,
       double minimumBuffaloSNF,
       double minimumBuffaloRate,
       double maximumBuffaloFat,
       double maximumBuffaloSNF,
-      double maximumBuffaloRate
-      )async {
-    this.minimumBuffaloFat=minimumBuffaloFat;
-    this.minimumBuffaloSNF=minimumBuffaloSNF;
-    this.minimumBuffaloRate=minimumBuffaloRate;
-    this.maximumBuffaloFat=maximumBuffaloFat;
-    this.maximumBuffaloSNF=maximumBuffaloSNF;
-    this.maximumBuffaloRate=maximumBuffaloRate;
+      double maximumBuffaloRate,
+      ) async {
+    this.minimumBuffaloFat  = minimumBuffaloFat;
+    this.minimumBuffaloSNF  = minimumBuffaloSNF;
+    this.minimumBuffaloRate = minimumBuffaloRate;
+
+    this.maximumBuffaloFat  = maximumBuffaloFat;
+    this.maximumBuffaloSNF  = maximumBuffaloSNF;
+    this.maximumBuffaloRate = maximumBuffaloRate;
     notifyListeners();
   }
-  List<dynamic> getBuffaloValues()
-   {
-    List<dynamic> list = [];
-    list.add(minimumBuffaloFat ??"");
-    list.add(minimumBuffaloSNF??"");
-    list.add(minimumBuffaloRate ??"");
-    list.add(maximumBuffaloFat ??"");
-    list.add(maximumBuffaloSNF??"");
-    list.add(maximumBuffaloRate ??"");
-    return list;
-  }
-  void updateExcelData(List<List<String>> updatedExcelData,int row, int col)async{
-    excelData = updatedExcelData.map((row) => List<String>.from(row)).toList();
-    RateChartInfo  rateChartInfo = RateChartInfo(note: 'Updated Rate chart', rateChart: updatedExcelData, row: row, col: col,date: DateTime.now().toIso8601String());
-    rateChartHistory.add(rateChartInfo);
-    print("notified all about update of the exceldata");
 
-    if(rateChartHistory.length > 20)
-    {
-      List<String> dates =  rateChartHistory.map((rateChart) => rateChart.date).toList();
-      dates.sort((a,b)=>DateTime.parse(a).compareTo(DateTime.parse(b)));
-      rateChartHistory.remove(dates.first);
+  // Convenience getter for UI forms
+  List<dynamic> getBuffaloValues() => [
+    minimumBuffaloFat ?? "",
+    minimumBuffaloSNF ?? "",
+    minimumBuffaloRate ?? "",
+    maximumBuffaloFat ?? "",
+    maximumBuffaloSNF ?? "",
+    maximumBuffaloRate ?? "",
+  ];
+
+  // Update Excel grid & history (called by UI when a cell is edited)
+  void updateExcelData(List<List<String>> updatedExcelData, int row, int col) {
+    excelData = updatedExcelData.map((r) => List<String>.from(r)).toList();
+    rateChartHistory.add(
+      RateChartInfo(
+        note: 'Updated Rate chart',
+        rateChart: updatedExcelData,
+        row: row,
+        col: col,
+        date: DateTime.now().toIso8601String(),
+      ),
+    );
+
+    // Keep only the latest 20 snapshots
+    if (rateChartHistory.length > 20) {
+      rateChartHistory.sort((a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)));
+      rateChartHistory.removeAt(0);
     }
     notifyListeners();
   }
 
-  /// Function to pick an Excel file and convert it to List<List<String>>
+  // ────────────────────────────────────────────────────────────────────────
+  // Pick an Excel file and convert it to excelData
   Future<void> pickExcelFile() async {
-    // Pick an Excel file
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['xlsx'], // Allow only Excel files
+      allowedExtensions: ['xlsx'],
     );
 
     if (result != null && result.files.single.path != null) {
-      String filePath = result.files.single.path!;
+      final filePath = result.files.single.path!;
+      final bytes    = File(filePath).readAsBytesSync();
+      final excel    = Excel.decodeBytes(bytes);
 
-      // Read the Excel file
-      var bytes = File(filePath).readAsBytesSync();
-      var excel = Excel.decodeBytes(bytes);
-
-
-      name =  result.files.single.name;
-      // Convert Excel data to List<List<String>>
-      //List<List<String>> data = [];
+      name = result.files.single.name;
       excelData = [];
-      for (var sheetName in excel.tables.keys) {
-        var sheet = excel.tables[sheetName];
-        if (sheet != null) {
-          for (var row in sheet.rows) {
-            excelData.add(row.map((cell) => cell?.value?.toString() ?? '').toList());
-          }
+      for (final sheet in excel.tables.values) {
+        for (final row in sheet!.rows) {
+          excelData.add(row.map((c) => c?.value?.toString() ?? '').toList());
         }
       }
-      // notifyListeners();
-      if(searchValue("3.00")) {
+
+      if (searchValue("3.00")) {
         filePicked = true;
-        RateChartInfo  rateChartInfo = RateChartInfo(note:  'New Rate chart', rateChart: excelData, row: row!, col: col!,date: DateTime.now().toIso8601String());
-        rateChartHistory.add( rateChartInfo);
-        // Admin admin = CustomWidgets().currentAdminNonStatic();
-        // var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
-        //
-        // BuffaloRateData? buffaloRateData  = buffaloBox.get(admin.id!);
-        // buffaloRateData ??= BuffaloRateData();
-        // buffaloRateData.excelData = excelData;
-        // buffaloRateData.rateChartHistory = rateChartHistory;
-        // buffaloRateData.row = row;
-        // buffaloRateData.col = col;
-        // buffaloRateData.filePicked = true;
-        // buffaloRateData.name = name;
-        // buffaloBox.put(admin.id!,buffaloRateData);
+        rateChartHistory.add(
+          RateChartInfo(
+            note: 'New Rate chart',
+            rateChart: excelData,
+            row: row!,
+            col: col!,
+            date: DateTime.now().toIso8601String(),
+          ),
+        );
       }
       notifyListeners();
     }
   }
 
-  /// Function to search for the first occurrence of 3.00
-  bool searchValue(String searchValue) {
-
-    for (int rowIndex = 0; rowIndex < excelData.length; rowIndex++) {
-      for (int colIndex = 0; colIndex < excelData[rowIndex].length; colIndex++) {
-        if (excelData[rowIndex][colIndex] == searchValue) {
-          {
-            row = rowIndex;
-            col = colIndex;
-            return true;
-          }
-
+  // Search excelData for value, record row/col if found
+  bool searchValue(String value) {
+    for (int r = 0; r < excelData.length; r++) {
+      for (int c = 0; c < excelData[r].length; c++) {
+        if (excelData[r][c] == value) {
+          row = r;
+          col = c;
+          return true;
         }
       }
     }
-
-    // If the value is not found
-    print("Value '$searchValue' not found.");
-    print("3.00 not found in cow rate chart");
     return false;
-
   }
-  double findRate(double fat,double snf){
 
-    if((minimumBuffaloFat != null && minimumBuffaloSNF != null) && fat < minimumBuffaloFat! || snf < minimumBuffaloSNF!)
-    {
+  // ────────────────────────────────────────────────────────────────────────
+  // Calculate rate for given fat & snf
+  double findRate(double fat, double snf) {
+    if ((minimumBuffaloFat != null && minimumBuffaloSNF != null) &&
+        (fat < minimumBuffaloFat! || snf < minimumBuffaloSNF!)) {
       return minimumBuffaloRate!;
     }
-    else if((maximumBuffaloFat != null && maximumBuffaloSNF != null ) && fat > maximumBuffaloFat! || snf > maximumBuffaloSNF!)
-    {
+    if ((maximumBuffaloFat != null && maximumBuffaloSNF != null) &&
+        (fat > maximumBuffaloFat! || snf > maximumBuffaloSNF!)) {
       return maximumBuffaloRate!;
     }
-    else
-    {
-      print("row = $row fat = ${fat}  col = ${col}  snf = ${snf}");
-      int excelRow = (row! + ((fat - 3)*10).round());
-      int excelCol = ((1+col!+ (snf-8)*10).round());
-      print("excel row $excelRow  excel col $excelCol" );
-      print("snf is ${excelData[excelRow][col!]}");
-      print("fat is ${excelData[row!][excelCol]}");
-      return double.parse(excelData[excelRow][excelCol]);
-    }
 
+    // Offset calculation relative to the position where 3.00 fat / 8.00 SNF was found
+    final excelRow = row! + ((fat - 3) * 10).round();
+    final excelCol = col! + 1 + ((snf - 8) * 10).round();
+
+    return double.parse(excelData[excelRow][excelCol]);
   }
 }
