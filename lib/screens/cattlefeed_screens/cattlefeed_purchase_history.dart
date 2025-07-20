@@ -103,8 +103,14 @@ class _CattleFeedPurchaseHistoryState extends State<CattleFeedPurchaseHistory> {
             text: "Delete",
             onPressed: () async {
               print('delete button pressed in purchase screen');
+              setState(() {
+                isLoading = true;
+              });
               bool? deleted = await CattleFeedPurchaseService.deletePurchase(entry);
-              if (deleted!) {
+              setState(() {
+                isLoading = false;
+              });
+               if (deleted!) {
                 setState(() {
                   filteredList.remove(entry);
                   purchaseList.remove(entry);
@@ -123,9 +129,10 @@ class _CattleFeedPurchaseHistoryState extends State<CattleFeedPurchaseHistory> {
   }
 
   void loadData() async {
-    setState(() => isLoading = true);
 
     try {
+      setState(() => isLoading = true);
+
       purchaseList = await CattleFeedPurchaseService.getAllPurchasesForAdmin(admin.id!);
       purchaseList.sort((a, b) => a.code!.compareTo(b.code!));
 

@@ -108,7 +108,6 @@ class CattleFeedOptions extends StatelessWidget {
                       return;
                     }
                     else{
-                      List<CattleFeedPurchase> cattleFeedPurchaseList = await CattleFeedPurchaseService.getAllCattleFeedPurchase(admin.id! );
                       Navigator.push(context, MaterialPageRoute(builder: (context) => CattleFeedSellHistory()));
                     }
                   },

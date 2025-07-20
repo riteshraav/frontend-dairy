@@ -150,7 +150,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> with TickerProv
 
   void deleteCustomers() async{
       generateCustomerCodeList();
-      showDialog(
+    showDialog(
         context: context,
         builder: (context) => AlertDialog(
           titlePadding: EdgeInsets.all(15),
@@ -175,7 +175,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> with TickerProv
                       Customer c = selectedCustomers[index];
                       return ListTile(
                         dense: true,
-                        leading: Text(
+                        title: Text(
                           "${c.code}-${c.name}",
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
@@ -197,6 +197,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> with TickerProv
               if (customerDeleted) {
                 for (Customer c in selectedCustomers) {
                   customers.remove(c);
+                  selectedCustomers = [];
                 }
                 var customerBox = Hive.box<List<Customer>>('customerBox');
                 customerBox.put('customers', customers);

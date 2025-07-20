@@ -206,13 +206,15 @@ class _ExcelViewerState extends State<ExcelViewer> {
   void _showHistoryDialog() {
     List<RateChartInfo> rateChartHistory = [];
     if (widget.excelType == 'cow') {
-      rateChartHistory = Provider.of<CowRateChartProvider>(context, listen: false).rateChartHistory;
+      rateChartHistory = Provider.of<CowRateChartProvider>(context, listen: false)
+          .rateChartHistory;
     } else {
-      rateChartHistory = Provider.of<BuffaloRatechartProvider>(context, listen: false).rateChartHistory;
+      rateChartHistory = Provider.of<BuffaloRatechartProvider>(context, listen: false)
+          .rateChartHistory;
     }
 
-    final historyKeys = rateChartHistory.map((rateChart)=>rateChart.date).toList().reversed.toList();
-
+    // Sort history by date (newest first)
+    rateChartHistory.sort((a, b) => b.date.compareTo(a.date));
 
     showDialog(
       context: context,
@@ -221,27 +223,29 @@ class _ExcelViewerState extends State<ExcelViewer> {
           builder: (context, setState) {
             return AlertDialog(
               title: Text("View History"),
-              content: historyKeys.isNotEmpty
+              content: rateChartHistory.isNotEmpty
                   ? SizedBox(
-                height: 300, // give height to allow scrolling
+                height: 300,
                 width: double.maxFinite,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: historyKeys.length,
+                  itemCount: rateChartHistory.length,
                   itemBuilder: (context, index) {
-                    final key = historyKeys[index];
-                    RateChartInfo currentRateChart = rateChartHistory.where((rateChart)=>rateChart.date == key).first;
-                    final isSelected = key == currentRateChart.date;
+                    final rateChart = rateChartHistory[index];
+                    final isSelected = rateChart == selectedRateChart;
                     return ListTile(
-                      title: Text("${CustomWidgets.extractDate(key)} - ${currentRateChart.note}"),
+                      title: Text(
+                        "${CustomWidgets.extractDate(rateChart.date)} - ${rateChart.note}",
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
                       tileColor: isSelected ? Colors.blue.shade100 : null,
                       onTap: () {
                         setState(() {
-                          selectedRateChart = currentRateChart;
-                          print("selected value ${selectedRateChart?.date}");
+                          selectedRateChart = rateChart;
                         });
                       },
-                   //    trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
                     );
                   },
                 ),
@@ -255,23 +259,25 @@ class _ExcelViewerState extends State<ExcelViewer> {
                 CustomWidgets.customButton(
                   text: "Select",
                   onPressed: selectedRateChart == null
-                      ? (){}
+                      ? () {}
                       : () {
-                    List<List<String>> selectedExcel = selectedRateChart?.rateChart.map((row) => List<String>.from(row)).toList()??[];
+                    // Update the excel data with the selected historical data
                     setState(() {
-                      excel = selectedExcel;
+                      excel = selectedRateChart!.rateChart
+                          .map((row) => List<String>.from(row))
+                          .toList();
                       curRow = selectedRateChart!.row;
                       curCol = selectedRateChart!.col;
+                      _hasChanges = true;
                       fromHistory = true;
                     });
-                    Navigator.pop(context);
+                    Navigator.of(ctx).pop();
                   },
                 ),
               ],
             );
           },
         );
-
       },
     );
   }
@@ -386,7 +392,12 @@ class _ExcelViewerState extends State<ExcelViewer> {
                   ],
                 )
                     : CustomWidgets.customButton(
-                    text: 'Adjust Rate', onPressed: _showAdjustmentOptionDialog),
+                    text: 'Adjust Rate', onPressed: (){
+                      setState(() {
+                        _isChangeEntire = true;
+                        isAdjusting = true;
+                      });
+                }),
               ),
               SizedBox(height: 10),
               Expanded(

@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../screens/customer_screens/add_customer.dart';
 import '../../screens/customer_screens/search_customer.dart';
-import '../../service/customer_service.dart';
 import '../../widgets/appbar.dart';
 
-import '../../model/Customer.dart';
-import '../../model/admin.dart';
-import '../drawer_screens/drawer_screen.dart';
 
 class CustomerPage extends StatelessWidget {
   CustomerPage({super.key});
@@ -67,19 +63,6 @@ class CustomerPage extends StatelessWidget {
                     return;
                   }
                   else{
-                    // List<Customer>list =[];
-                    // try{
-                    //   list  = await CustomerService.findAllCustomer(admin.id!);
-                    //   if(list.isNotEmpty) {
-                    //     list.sort((a, b) => int.parse(a.id!).compareTo(int.parse(b.id!)));
-                    //   }
-                    //
-                    // }
-                    // catch(e){
-                    //   print(e.toString());
-                    //   throw e;
-                    // }
-
                     Navigator.push(context, MaterialPageRoute(builder: (context)=>SearchCustomerPage( agenda:"Search Customer",)));
                   }
                 },

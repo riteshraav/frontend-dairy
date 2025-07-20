@@ -93,7 +93,13 @@ class _CustomerLoanHistoryState extends State<CustomerLoanHistory> {
             onPressed: () => Navigator.pop(context),
           ),
           CustomWidgets.customButton(text:  "Delete",onPressed:  () async {
+            setState(() {
+              isLoading = true;
+            });
             bool customerDeleted = await LoanEntryService.deleteLoanEntry(entry);
+            setState(() {
+              isLoading = false;
+            });
             if (customerDeleted) {
               loanList.remove(entry);
               store.remove(entry);

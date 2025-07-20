@@ -46,6 +46,7 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
   TextEditingController loanDeductionController = TextEditingController();
    LoanEntry? loanEntry ;
    double loanInterest = 0;
+   bool isLoading = true;
    double advanceInterest = 0;
    AdvanceEntry? advanceEntry;
   TextEditingController otherExpenseDeductionController =
@@ -74,16 +75,25 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
       Fluttertoast.showToast(msg: "Enter code and dates");
       return;
     }
+    setState(() {
+      isLoading = true;
+    });
     List<MilkCollection>? milkCollectionList = await MilkCollectionService()
         .getAllForCustomerAuth(selectedCustomer.code!, admin.id!);
     if (milkCollectionList == null) {
       CustomWidgets.logout(context);
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
     currentCustomerBalance = await CustomerBalanceService()
         .getCustomerBalanceAuth(admin.id!, selectedCustomer.code!);
     if (currentCustomerBalance == null) {
       CustomWidgets.logout(context, "something went wrong");
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
     if (currentCustomerBalance!.adminId == 'dummy') {
@@ -128,6 +138,7 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
     }
 
     setState(() {
+      isLoading = false;
       milkTotalBillController.text = totalAmount.toStringAsFixed(2);
       cattleFeedBalanceController.text =
           (currentCustomerBalance!.balanceCattleFeed ?? "").toString();
@@ -265,6 +276,9 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
         (double.tryParse(dedAmountController.text) ?? 0);
     double loanBalance = (double.tryParse(loanBalanceController.text) ?? 0) - (double.tryParse(loanDeductionController.text) ?? 0);
         double advanceBalance =   (double.tryParse(advanceBalanceController.text) ?? 0) - (double.tryParse(advanceDeductionController.text) ?? 0) ;
+   setState(() {
+     isLoading = true;
+   });
     if(loanEntry != null)
     {
       double remainingLoanDeduction = (loanInterest - (double.tryParse(loanDeductionController.text) ?? 0));
@@ -317,6 +331,9 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
 
     if (isCustomerBalanceUpdated == null) {
       CustomWidgets.logout(context);
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
     // bool isDeductionUpdated = await DeductionService.addDeduction(deduction);
@@ -327,8 +344,14 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
         MaterialPageRoute(builder: (context) => LoginPage()),
         (route) => false, // Clears entire stack
       );
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
+    setState(() {
+      isLoading = false;
+    });
     if (isCustomerBalanceUpdated && isDeductionUpdated) {
       Fluttertoast.showToast(msg: "Saved");
       clearAllControllers();
@@ -445,7 +468,7 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
     return Scaffold(
       backgroundColor: Colors.blue[50],
       appBar: CustomWidgets.buildAppBar("Deduction Master"),
-      body: SingleChildScrollView(
+      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

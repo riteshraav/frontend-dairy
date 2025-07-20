@@ -29,6 +29,7 @@ class _CattleFeedSellScreenState extends State<CattleFeedSellScreen> {
   String paymentMethod = "Credit";
   int selectedQuantity = 1;
   double totalAmount = 0.0;
+  bool isLoading = false;
 
   final List<int> quantityOptions = List.generate(50, (index) => index + 1);
   final List<String> amountOptions = ['Credit', 'Cash'];
@@ -64,7 +65,13 @@ class _CattleFeedSellScreenState extends State<CattleFeedSellScreen> {
         totalAmount: totalAmount,
         adminId: admin.id
       );
+    setState(() {
+      isLoading = true;
+    });
       cattleFeedSell = await   CattleFeedSellService.addCattleFeedSell(cattleFeedSell);
+    setState(() {
+      isLoading = false;
+    });
       if(cattleFeedSell == null) {
         Fluttertoast.showToast(msg: "Error",backgroundColor: Colors.redAccent);
         return;
@@ -106,7 +113,7 @@ class _CattleFeedSellScreenState extends State<CattleFeedSellScreen> {
         ),
       ],),
       backgroundColor: Colors.blue[50],
-      body: SingleChildScrollView(
+      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
         padding: EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

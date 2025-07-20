@@ -31,10 +31,17 @@ class _CattleFeedPurchaseScreenState extends State<CattleFeedPurchaseScreen> {
   TextEditingController totalAmtController = TextEditingController();
   Admin admin = CustomWidgets.currentAdmin();
   List<CattleFeedSupplier> cattleFeedSupplierList = [];
+  bool _isLoading = false;
   String paymentMethod = 'Credit';
   List<String> paymentMethods = ['Credit', 'Cash'];
   void loadData()async{
+    setState(() {
+      _isLoading = true;
+    });
     cattleFeedSupplierList = await CattleFeedSupplierService.getAllCattleFeedSupplier(admin.id! );
+    setState(() {
+      _isLoading = false;
+    });
   }
   @override
   void initState() {
@@ -57,34 +64,6 @@ class _CattleFeedPurchaseScreenState extends State<CattleFeedPurchaseScreen> {
         dateController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
       });
     }
-  }
-  void deletePurchase(int index) async {
-    bool ? isDeleted = await CattleFeedPurchaseService.deletePurchase(savedPurchases[index]);
-
-    if(isDeleted==null || !isDeleted){
-      Fluttertoast.showToast(msg: "error in deleting");
-      return;
-    }
-    setState(() {
-      savedPurchases.removeAt(index);
-      if(editingIndex==index){
-        codeController.clear();
-        cattleFeedNameController.clear();
-        dateController.clear();
-        wagesController.clear();
-        totalAmtController.clear();
-        supplierController.clear();
-        qtyController.clear();
-        rateController.clear();
-        amtController.clear();
-        gstAmtController.clear();
-        commController.clear();
-        wagesController.clear();
-        billAmtController.clear();
-        paymentMethod="credit";
-        dateController.clear();
-      }
-    });
   }
   void calculateAmount() {
     double qty = double.tryParse(qtyController.text) ?? 0;
@@ -118,8 +97,8 @@ class _CattleFeedPurchaseScreenState extends State<CattleFeedPurchaseScreen> {
   int? editingIndex;
 
   Future<void> savePurchase() async {
+
     if (codeController.text.isNotEmpty &&
-        voucherController.text.isNotEmpty &&
         cattleFeedNameController.text.isNotEmpty &&
         supplierController.text.isNotEmpty &&
         qtyController.text.isNotEmpty &&
@@ -133,7 +112,7 @@ class _CattleFeedPurchaseScreenState extends State<CattleFeedPurchaseScreen> {
         dateController.text.isNotEmpty) {
       CattleFeedPurchase cattleFeedPurchase =  CattleFeedPurchase(
         feedName: cattleFeedNameController.text,
-        voucher: voucherController.text,
+        voucher: '${admin.id}_${DateTime.now().millisecond}',
         code: codeController.text,
         supplier: supplierController.text,
         quantity: int.parse(qtyController.text),
@@ -174,7 +153,13 @@ class _CattleFeedPurchaseScreenState extends State<CattleFeedPurchaseScreen> {
         totalAmtController.clear();
         paymentMethod = 'Credit';
       });
+      setState(() {
+        _isLoading = true;
+      });
       bool isSaved = await CattleFeedPurchaseService.addCattleFeedPurchase(cattleFeedPurchase);
+      setState(() {
+        _isLoading = false;
+      });
       if(isSaved){
         Fluttertoast.showToast(msg: "Info Saved");
       }
@@ -227,7 +212,7 @@ class _CattleFeedPurchaseScreenState extends State<CattleFeedPurchaseScreen> {
     return Scaffold(
       backgroundColor:Colors.blue[50],
       appBar: CustomWidgets.buildAppBar('Cattle Feed Purchase'),
-      body: SingleChildScrollView(
+      body:_isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [

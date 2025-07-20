@@ -39,6 +39,7 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
   double totalQuantity = 0;
   List<String> customerCodeList = [];
   String period ="";
+  bool isLoading = false;
 
   @override
   void initState()   {
@@ -280,13 +281,20 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
   }
 
   void generateLedgerReport() async{
+    setState(() {
+      isLoading = true;
+    });
     List<CattleFeedSell> cattleFeedSellList = await CattleFeedSellService.getAllCattleFeedSell(widget.admin.id!,customerCodeList,fromDate!.toIso8601String(),toDate!.toIso8601String() );
+
     print("cattle feed sell list length is ${cattleFeedSellList.length}");
     LedgerReportGeneration ledgerReportGeneration =LedgerReportGeneration(cattleFeedSellList, fromDate!.toIso8601String(), toDate!.toIso8601String());
     final pdfFile = await ledgerReportGeneration.generate();
     final file = await PdfApi.saveDocument(name: "${widget.admin.dairyName} ${DateTime.now().millisecondsSinceEpoch}", pdf: pdfFile);
 
     PdfApi.openFile(file);
+    setState(() {
+      isLoading = false;
+    });
 }
   bool isLeapYear()
   {
@@ -435,7 +443,7 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
       backgroundColor: Colors.blue[50],
       appBar: CustomWidgets.buildAppBar(widget.title),
       drawer: NewCustomDrawer(),
-      body: Padding(
+      body:isLoading? Center(child: CircularProgressIndicator()): Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [

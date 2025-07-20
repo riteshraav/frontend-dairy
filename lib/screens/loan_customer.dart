@@ -426,6 +426,7 @@ class _LoanScreenState extends State<LoanScreen> {
   String selectedPaymentMethod = "Credit";
   bool isEditing = false;
   int? editingIndex;
+  bool isLoading = false;
   Admin admin = CustomWidgets.currentAdmin();
   List<LoanEntry> loanEntryList = [];
   List<Customer> customerList = CustomWidgets.allCustomers();
@@ -458,7 +459,13 @@ class _LoanScreenState extends State<LoanScreen> {
     }
 
     loanEntryBox.put('loanEntry', loanEntryList);
+    setState(() {
+      isLoading = true;
+    });
     bool isSuccessful = await LoanEntryService.addLoanEntry(loanEntry);
+    setState(() {
+      isLoading = true;
+    });
     if (isSuccessful) {
       Fluttertoast.showToast(msg: "Entry saved");
     }
@@ -502,7 +509,13 @@ class _LoanScreenState extends State<LoanScreen> {
           CustomWidgets.customButton(
             text: "Delete",
             onPressed: () async {
+              setState(() {
+                isLoading = true;
+              });
               bool customerDeleted = await LoanEntryService.deleteLoanEntry(entry);
+              setState(() {
+                isLoading = false;
+              });
               if (customerDeleted) {
                 widget.loanEntry.remove(entry);
                 Fluttertoast.showToast(msg: "Deleted Successfully");
@@ -544,13 +557,6 @@ class _LoanScreenState extends State<LoanScreen> {
     });
   }
 
-  void _deleteData(int index) {
-    LoanEntry loanEntry = loanEntryList.removeAt(index);
-    loanEntryBox.put('loanEntry', loanEntryList);
-    LoanEntryService.deleteLoanEntry(loanEntry);
-    _clearFields();
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -565,7 +571,7 @@ class _LoanScreenState extends State<LoanScreen> {
         appBar: CustomWidgets.buildAppBar(" Customer Loan", [], IconButton(onPressed: () {
           Navigator.pop(context, widget.loanEntry);
         }, icon: Icon(Icons.arrow_back))),
-        body: SingleChildScrollView(
+        body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(16.0),
             child: Column(
@@ -645,35 +651,7 @@ class _LoanScreenState extends State<LoanScreen> {
                 ),
                 SizedBox(height: 15),
                 CustomWidgets.customButton(text: "Save", onPressed: _saveData),
-                SizedBox(height: 15),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columnSpacing: 8,
-                    headingRowHeight: 45,
-                    border: TableBorder.all(),
-                    headingRowColor: MaterialStateProperty.all(Color(0xFF24A1DE)),
-                    columns: [
-                      DataColumn(label: Text("Code", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Amt", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Interest", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Pay", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Edit", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Delete", style: TextStyle(color: Colors.white))),
-                    ],
-                    rows: List.generate(loanEntryList.length, (index) {
-                      final entry = loanEntryList[index];
-                      return DataRow(cells: [
-                        DataCell(Text(entry.customerId)),
-                        DataCell(Text((entry.loanAmount ?? 0.0).toString())),
-                        DataCell(Text((entry.interestRate ?? 0.0).toString())),
-                        DataCell(Text(entry.modeOfPayback)),
-                        DataCell(IconButton(icon: Icon(Icons.edit), onPressed: () => _editData(index, entry))),
-                        DataCell(IconButton(icon: Icon(Icons.delete), onPressed: () => _deleteData(index))),
-                      ]);
-                    }),
-                  ),
-                ),
+
               ],
             ),
           ),

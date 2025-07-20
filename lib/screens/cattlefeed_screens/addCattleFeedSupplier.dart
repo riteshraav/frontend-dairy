@@ -35,7 +35,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen>{
   final TextEditingController sabhasadNumberController = TextEditingController();
   final TextEditingController bankBranchNameController = TextEditingController();
   final TextEditingController bankAccountNumberController = TextEditingController();
-
+  bool isLoading = false;
   String ? gender;
 
   // Validation Functions
@@ -199,7 +199,14 @@ class _AddSupplierScreenState extends State<AddSupplierScreen>{
           adminId: admin.id
       );
       if( isDeviceConnected) {
-        if(await CattleFeedSupplierService.addCattleFeedSupplier(cattleFeedSupplier))
+        setState(() {
+          isLoading = true;
+        });
+       bool isAdded = await CattleFeedSupplierService.addCattleFeedSupplier(cattleFeedSupplier);
+        setState(() {
+          isLoading = false;
+        });
+        if(isAdded)
         {
           print('suplier saved');
           setState(() {
@@ -251,10 +258,9 @@ class _AddSupplierScreenState extends State<AddSupplierScreen>{
       backgroundColor: Colors.blue[50],
       drawer: NewCustomDrawer(),
       appBar: CustomWidgets.buildAppBar('Add Supplier'),
-      body: SingleChildScrollView(
+      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
         child: Column(
           children: [
-            CustomWidgets.buildInternetChecker(context),
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Form(

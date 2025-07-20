@@ -52,7 +52,8 @@ class CattleFeedSellService{
       }
     }
     static Future<List<CattleFeedSell>> getAllCattleFeedSell(String adminId,
-        List<String> customer, String fromDate, String toData) async {
+        List<String> customer, String fromDate, String toData) async
+    {
       final url = Uri.parse("${CustomWidgets
           .getIp()}/cattleFeedSell/getAllForCustomers/$adminId/$fromDate/$toData");
       try {

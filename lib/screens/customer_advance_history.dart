@@ -93,7 +93,14 @@ class _CustomerAdvanceHistoryState extends State<CustomerAdvanceHistory> {
             onPressed: () => Navigator.pop(context),
           ),
           CustomWidgets.customButton(text:  "Delete",onPressed:  () async {
+            setState(() {
+              isLoading = true;
+            });
+
             bool customerDeleted = await CustomerAdvanceService.deleteAdvance(entry);
+              setState(() {
+                isLoading = false;
+              });
             if (customerDeleted) {
               store.remove(entry);
               advanceList.remove(entry);

@@ -17,7 +17,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   File? _imageFile;
   String _selectedAvatar = AvatarProvider().avatarPath;
-  final ImagePicker _picker = ImagePicker();
   Admin admin = CustomWidgets.currentAdmin();
 
   // Function to Open Avatar Selection Bottom Sheet

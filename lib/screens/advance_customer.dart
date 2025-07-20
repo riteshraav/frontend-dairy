@@ -32,6 +32,7 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
   String selectedPaymentMethod = "Credit";
   bool isEditing = false;
   int? editingIndex;
+  bool isLoading = false;
   late AdvanceEntry selectedEntry;
 
   @override
@@ -68,7 +69,13 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
         // **Add new entry**
         advanceEntry.add(entry);
       }
+      setState(() {
+        isLoading = true;
+      });
       CustomerAdvanceService.addCustomerAdvance(entry);
+      setState(() {
+        isLoading = false;
+      });
       advanceBox.put('advance', advanceEntry);
 
       setState(() {
@@ -150,7 +157,13 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           CustomWidgets.customButton(text:  "Delete",onPressed:  () async {
+            setState(() {
+              isLoading = true;
+            });
             bool customerDeleted = await CustomerAdvanceService.deleteAdvance(entry);
+            setState(() {
+              isLoading = false;
+            });
             if (customerDeleted) {
                 widget.advanceList.remove(entry);
               Fluttertoast.showToast(msg: "Deleted Successfully");
@@ -192,16 +205,7 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
     });
   }
 
-  void _deleteData(int index,AdvanceEntry entry) {
-    List<AdvanceEntry> advanceList = advanceBox.get('advance')??[];
-    advanceList.remove(entry);
-    advanceBox.put('advance',advanceList);
-    _clearFields();
-    CustomerAdvanceService.deleteAdvance(entry);
-    setState(() {
-      list = advanceList;
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +216,7 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
         Navigator.pop(context,widget.advanceList)
       }, icon: Icon(Icons.arrow_back))),
 
-      body: SingleChildScrollView(
+      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
@@ -366,44 +370,6 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
                 onPressed: _saveData,
                 child: Text(isEditing ? "Update" : "Save",style: TextStyle(color: Colors.white),),
                 style: CustomWidgets.elevated(),
-              ),
-              SizedBox(height: 10),
-
-              SingleChildScrollView(
-                          child: DataTable(
-                  columnSpacing: 8,
-                  headingRowHeight: 40,
-                  border: TableBorder.all(),
-                  headingRowColor: WidgetStateProperty.all(Color(0xFF24A1DE)),
-                  columns: [
-                    DataColumn(label: Text("Code",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Amt",style: TextStyle(color:Colors.white),)),
-                    DataColumn(label: Text("Interest",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Pay",style: TextStyle(color:Colors.white))),
-                    DataColumn(label: Text("Edit",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Delete",style: TextStyle(color: Colors.white),))
-                  ],
-                  rows: List.generate(
-                    list.length,
-                        (index) {
-                      final entry = list[index];
-                      return DataRow(cells: [
-                        DataCell(Text(entry.code)),
-                        DataCell(Text(entry.advanceAmount.toString())),
-                        DataCell(Text(entry.interestRate.toString())),
-                        DataCell(Text(entry.paymentMethod)),
-                        DataCell(IconButton(icon: Icon(Icons.edit),onPressed:()=> _editData(index, entry))),
-                        DataCell(IconButton(icon: Icon(Icons.delete),onPressed:()=> _deleteData(index, entry))),
-                        // DataCell(Row(
-                        //   children: [
-                        //     IconButton(icon: Icon(Icons.edit), onPressed: () => _editData(index, entry)),
-                        //     IconButton(icon: Icon(Icons.delete), onPressed: () => _deleteData(index,entry)),
-                        //   ],
-                        // )),
-                      ]);
-                    },
-                  ),
-                ),
               ),
             ],
           ),

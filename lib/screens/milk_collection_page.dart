@@ -65,9 +65,13 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
   String _searchMode = 'Code';
   var customerBox = Hive.box<List<Customer>>('customerBox');
   List<Customer> customerList = [];
-  bool check(TextEditingController controller)
+  bool check(TextEditingController controller,bool isQuantity)
   {
     final text = controller.text;
+    if(isQuantity)
+      {
+        return RegExp(r'^\d+\.\d{3}$').hasMatch(text);
+      }
     return RegExp(r'^\d+\.\d{1}$').hasMatch(text);
   }
   @override
@@ -90,37 +94,37 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
       }
     });
     _bquantityController.addListener((){
-      if(check(_bquantityController))
+      if(check(_bquantityController,true))
       {
         FocusScope.of(context).requestFocus(bFatFocusNode);
       }
     });
     _bfatController.addListener((){
-      if(check(_bfatController))
+      if(check(_bfatController,false))
       {
         FocusScope.of(context).requestFocus(bSNFFocusNode);
       }
     });
     _bsnfController.addListener((){
-      if(check(_bsnfController))
+      if(check(_bsnfController,false))
       {
         FocusScope.of(context).requestFocus(saveFocusNode);
       }
     });
     _cquantityController.addListener((){
-      if(check(_cquantityController))
+      if(check(_cquantityController,true))
       {
         FocusScope.of(context).requestFocus(cFatFocusNode);
       }
     });
     _cfatController.addListener((){
-      if(check(_cfatController))
+      if(check(_cfatController,false))
       {
         FocusScope.of(context).requestFocus(cSNFFocusNode);
       }
     });
     _csnfController.addListener((){
-      if(check(_csnfController))
+      if(check(_csnfController,false))
       {
         FocusScope.of(context).requestFocus(saveFocusNode);
       }
@@ -206,11 +210,6 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
 
     if(status == null)
     {
-
-      // Navigator.of(context).pushAndRemoveUntil(
-      //   MaterialPageRoute(builder: (context) => LoginPage()),
-      //       (route) => false, // Clears entire stack
-      // );
       Fluttertoast.showToast(msg: "null");
       return;
     }
@@ -331,19 +330,41 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
     double eveningBuffaloQuantity = Provider.of<QuantityProvider>(context).eveningBuffaloQuantity;
     double eveningCowQuantity = Provider.of<QuantityProvider>(context).eveningCowQuantity;
     return Scaffold(
-      appBar: CustomWidgets.buildAppBar("Milk Collection",[
+      appBar: CustomWidgets.buildAppBar("Milk Collection", [
         Padding(
-          padding: const EdgeInsets.only(left: 8.0,right: 8.0),
-          child: Text(((DateTime.now().hour<=14)?morningBuffaloQuantity:eveningBuffaloQuantity).toStringAsFixed(2),
-            style: TextStyle(color: Colors.white,fontSize: 25),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[300], // Silver background
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              ((DateTime.now().hour <= 14)
+                  ? morningBuffaloQuantity
+                  : eveningBuffaloQuantity)
+                  .toStringAsFixed(3),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 20),
+            ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 8.0,right: 8.0),
-          child: Text(((DateTime.now().hour<=14)?morningCowQuantity:eveningCowQuantity).toStringAsFixed(2),
-              style: TextStyle(color: Colors.white,fontSize: 25)
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[300], // Silver background
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              ((DateTime.now().hour <= 14)
+                  ? morningCowQuantity
+                  : eveningCowQuantity)
+                  .toStringAsFixed(3),
+              style: const TextStyle(color: Colors.blue, fontSize: 20),
+            ),
           ),
-        )
+        ),
       ]),
       drawer: CustomDrawer(),
       backgroundColor: Colors.blue[50],

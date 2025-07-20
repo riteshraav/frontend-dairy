@@ -22,7 +22,8 @@ class CattleFeedPurchaseService{
     }
   }
   static Future<List<CattleFeedPurchase>> getAllPurchasesForAdmin(
-      String adminId) async {
+      String adminId) async
+  {
     final url = Uri.parse("${CustomWidgets.getIp()}/cattleFeedPurchase/getAll/$adminId");
     try {
       final response = await http.get(url);

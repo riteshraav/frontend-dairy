@@ -16,12 +16,12 @@ class LocalMilkSalePage extends StatefulWidget {
 }
 
 class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
-  final _formKey = GlobalKey<FormState>();
   String? selectedDivision = 'HeadOffice';
   String selectedType = 'Credit';
   String selectedCowBuff = 'Buffalo';
   double totalValue = 0;
   int? editingIndex;
+  bool isLoading = false;
 
   TextEditingController litersController = TextEditingController();
   TextEditingController fatController = TextEditingController();
@@ -94,8 +94,12 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
     if(list == null)
       {
         Fluttertoast.showToast(msg: "Something went wrong");
+        setState(() {
+          isLoading = false;
+        });
         return;
       }
+    print('list length in local milk ${list.length}');
     setState(() {
       localeSaleList = list;
       loading = false;
@@ -130,8 +134,13 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
       {
           localMilkSale.id = localeSaleList[editingIndex!].id;
       }
+    setState(() {
+      isLoading = true;
+    });
     String isSaved= await LocalMilkSaleService.addLocalMilkSale(localMilkSale);
-
+    setState(() {
+      isLoading = false;
+    });
    if(isSaved == 'Unsuccessful') {
      print('failed to save');
       Fluttertoast.showToast(msg: 'failed to save');
@@ -156,10 +165,15 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
   }
 
   void deleteEntry(int index) async {
+    setState(() {
+      isLoading = true;
+    });
     bool isDeleted = await LocalMilkSaleService.deleteMilkSale(localeSaleList[index]);
     if(isDeleted)
       {
+
         setState(() {
+          isLoading = false;
           localeSaleList.removeAt(index);
         });
         Fluttertoast.showToast(msg: "Entry deleted");
@@ -196,7 +210,7 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
     return Scaffold(
       backgroundColor: Colors.blue[50],
       appBar: CustomWidgets.buildAppBar("Local Milk Sale"),
-      body: SingleChildScrollView(
+      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -448,9 +462,6 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                         label: Text("Amt",
                             style: TextStyle(color: Colors.white))),
                     DataColumn(
-                        label: Text("Edit",
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
                         label: Text("Delete",
                             style: TextStyle(color: Colors.white))),
                   ],
@@ -462,27 +473,6 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
                       DataCell(Text(entry.paymentType)),
                       DataCell(Text(entry.quantity.toStringAsFixed(2))),
                       DataCell(Text(entry.totalValue.toStringAsFixed(2))),
-                      DataCell(IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          setState(() {
-                            editingIndex = index;
-                            litersController.text =
-                                entry.quantity.toStringAsFixed(2);
-                            amountController.text =
-                                entry.totalValue.toStringAsFixed(2);
-                            selectedCowBuff = entry.milkType ?? "Buffalo";
-                            selectedType = entry.paymentType;
-                            codeController.text = entry.customerId ?? "";
-                            customerController.text = CustomWidgets.searchCustomerById(entry.customerId!, "Code").first.name!;
-                            _paymentMethod[0] = selectedType == "Credit";
-                            _paymentMethod[1] = selectedType == "Cash";
-                            _selectedMilkType[0] =
-                                selectedCowBuff == "Buffalo";
-                            _selectedMilkType[1] = selectedCowBuff == "Cow";
-                          });
-                        },
-                      )),
                       DataCell(IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () {
