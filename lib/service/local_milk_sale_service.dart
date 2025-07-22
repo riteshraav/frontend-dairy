@@ -60,22 +60,46 @@ class LocalMilkSaleService{
   static Future<List<LocalMilkSale>?> getDateEntries(String date,String adminId)
   async{
     final url = Uri.parse("${CustomWidgets.getIp()}/localSale/getAllLocalSaleEntry/$adminId/$date");
-  try{
-    final response = await http.get(url);
-    if(response.statusCode == 200)
-    {
-      List<dynamic> jsonData = jsonDecode(response.body);
-      print(jsonData);
-      return jsonData.map((entry)=> LocalMilkSale.fromJson(entry)).toList();
+    try{
+      final response = await http.get(url);
+      if(response.statusCode == 200)
+      {
+        List<dynamic> jsonData = jsonDecode(response.body);
+        print(jsonData);
+        return jsonData.map((entry)=> LocalMilkSale.fromJson(entry)).toList();
+      }
+      else{
+        print('status code for local sale ${response.statusCode} with message ${response.body}');
+        return [];
+      }
     }
-    else{
-      print('status code for local sale ${response.statusCode} with message ${response.body}');
-      return [];
+    catch(e){
+      print('local sale exception $e');
+      return null;
     }
   }
-  catch(e){
-    print('local sale exception $e');
-    return null;
+
+  static Future<List<LocalMilkSale>?> getEntriesForReport(List<String>customerCodeList,String fromDate,String toDate,bool isBuffaloSelected,bool isCowSelected,String adminId)
+  async{
+    final url = Uri.parse("${CustomWidgets.getIp()}/localSale/getAllLocalSaleEntry/$adminId/$fromDate/$toDate/$isBuffaloSelected/$isCowSelected");
+    try{
+      final response = await http.get(url,
+      headers: {"Content-Type":"application/json"},);
+      if(response.statusCode == 200)
+      {
+
+        List<dynamic> jsonData = jsonDecode(response.body);
+        print(jsonData);
+        return jsonData.map((entry)=> LocalMilkSale.fromJson(entry)).toList();
+      }
+      else{
+        print('status code for local sale ${response.statusCode} with message ${response.body}');
+        return [];
+      }
+    }
+    catch(e){
+      print('local sale exception $e');
+      return null;
     }
   }
 }

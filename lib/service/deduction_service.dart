@@ -354,7 +354,7 @@ class DeductionService{
      return [];
    }
  }
-   Future<List<Deduction>?> getDeductionForCustomersBetweenPeriodAuth(List<String>customerCodeList,String adminId,String fromDate,String toDate)
+   Future<List<Deduction>?> getDeductionForCustomersBetweenPeriodAuth(List<String> customerCodeList,String adminId,String fromDate,String toDate)
   async{
     final url ="${CustomWidgets.getIp()}/deduction/get/$fromDate/$toDate";
     print(fromDate);

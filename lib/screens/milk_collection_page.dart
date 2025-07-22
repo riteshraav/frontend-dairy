@@ -330,7 +330,7 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
     double eveningBuffaloQuantity = Provider.of<QuantityProvider>(context).eveningBuffaloQuantity;
     double eveningCowQuantity = Provider.of<QuantityProvider>(context).eveningCowQuantity;
     return Scaffold(
-      appBar: CustomWidgets.buildAppBar("Milk Collection", [
+      appBar: CustomWidgets.buildAppBar("Collection", [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Container(

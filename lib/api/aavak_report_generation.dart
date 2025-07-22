@@ -19,7 +19,6 @@ class Combination {
 class PdfInvoiceApi {
   final List<MilkCollection> milkCollectionList;
   Admin admin;
-  List<Customer> customerList;
   double totalBuffaloQuantity = 0;
   double totalBuffaloFat = 0;
   double totalBuffaloSNF = 0;
@@ -32,7 +31,7 @@ class PdfInvoiceApi {
   double totalCowCustomer = 0;
   double totalAmount = 0;
   double totalQuantity = 0;
-  PdfInvoiceApi(this.milkCollectionList, this.admin, this.customerList);
+  PdfInvoiceApi(this.milkCollectionList, this.admin);
   List<Customer> customers = CustomWidgets.allCustomers();
   /// Extracts and formats a date.
   String extractDate(dynamic date) {

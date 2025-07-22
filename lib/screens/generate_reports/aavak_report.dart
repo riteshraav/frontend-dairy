@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:take8/api/ledger_report_generation.dart';
+import 'package:take8/api/local_sale_report.dart';
 import 'package:take8/model/cattleFeedSell.dart';
+import 'package:take8/model/localsale.dart';
 import 'package:take8/service/cattleFeedSellService.dart';
+import 'package:take8/service/local_milk_sale_service.dart';
 import '../../api/customer_summary_report.dart';
 import '../../api/dairy_summary_report.dart';
 import '../../api/customer_billing_report.dart';
@@ -41,6 +44,7 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
   String period ="";
   bool isLoading = false;
 
+
   @override
   void initState()   {
     // TODO: implement initState
@@ -48,7 +52,6 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
     if(  ["Aavak Report" , "Summary Report"].contains(widget.title))
       {
         widget.customerList =CustomWidgets.allCustomers();
-
       }
     if(widget.title == "Customer Bill" || widget.title == "Ledger Report")
       {
@@ -125,7 +128,7 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
 
       print(milkCollection.first.date);
       PdfInvoiceApi pdfInvoiceApi =
-          PdfInvoiceApi(milkCollection, widget.admin, widget.customerList);
+          PdfInvoiceApi(milkCollection, widget.admin);
       final pdfFile = await pdfInvoiceApi.generate();
 
       final file = await PdfApi.saveDocument(
@@ -205,6 +208,33 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
 
 
   }
+  void generateLocalSaleReport()
+  async{
+    setState(() {
+      isLoading= true;
+    });
+    List<LocalMilkSale>? list = await LocalMilkSaleService.getEntriesForReport(customerCodeList,fromDate!.toIso8601String(),(toDate!.add(Duration(days: 1))).toIso8601String(),isBuffaloSelected,isCowSelected,widget.admin.id!);
+    if(list == null)
+      {
+        Fluttertoast.showToast(msg: "Error in generating report");
+        print('local milk sale list is nnull');
+        setState(() {
+          isLoading = false;
+        });
+      return;
+      }
+    print('local milk sale list size is ${list.length}');
+    LocalSaleReport localSaleReport = LocalSaleReport(list,fromDate!,toDate!,isBuffaloSelected,isCowSelected);
+
+    final pdfFile = await localSaleReport.generate();
+
+    final file = await PdfApi.saveDocument(name: "${widget.admin.dairyName} ${DateTime.now().millisecondsSinceEpoch}", pdf: pdfFile);
+
+    PdfApi.openFile(file);
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   void generateCustomerBill()async{
     List<CustomerBalance>? customerBalanceList = await CustomerBalanceService().getCustomerBalanceForCustomersAuth(widget.admin.id!,customerCodeList);
@@ -216,7 +246,7 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
         Fluttertoast.showToast(msg: "customer balance null");
         return;
       }
-    List<Deduction>? deduction = await DeductionService().getDeductionForCustomersBetweenPeriodAuth(customerCodeList,widget.admin.id!, fromDate!.toIso8601String(), toDate!.toIso8601String());
+    List<Deduction>? deduction = await DeductionService().getDeductionForCustomersBetweenPeriodAuth( customerCodeList,widget.admin.id!, fromDate!.toIso8601String(), toDate!.toIso8601String());
     if(deduction == null)
       {
      //   CustomWidgets.logout(context);
@@ -431,6 +461,8 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
           case "Ledger Report":
             generateLedgerReport();
             break;
+          case "Local sale Report":
+            generateLocalSaleReport();
           default :
             generateSummary();
 
