@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:take8/screens/cattlefeed_screens/cattleFeedPurchaseScreen.dart';
 import '../../model/cattleFeedSell.dart';
 import '../../service/cattleFeedSellService.dart';
 import '../../widgets/appbar.dart';
 import '../../model/admin.dart';
 import '../../model/cattleFeedPurchase.dart';
 import '../../model/Customer.dart';
+import 'cattleFeedPurchaseScreen.dart';
 
 class CattleFeedSellScreen extends StatefulWidget {
   List<CattleFeedPurchase> cattleFeedPurchaseList = [];

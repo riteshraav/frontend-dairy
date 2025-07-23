@@ -1,16 +1,16 @@
 
+import 'package:DairySpace/providers/admin_provider.dart';
+import 'package:DairySpace/providers/avatar_provider.dart';
+import 'package:DairySpace/providers/customers_provider.dart';
+import 'package:DairySpace/providers/quantity_provider.dart';
+import 'package:DairySpace/screens/splash_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
-import 'package:take8/providers/admin_provider.dart';
-import 'package:take8/providers/avatar_provider.dart';
-import 'package:take8/providers/customers_provider.dart';
-import 'package:take8/providers/quantity_provider.dart';
-import 'package:take8/screens/auth_screens/login_screen.dart';
-import 'package:take8/screens/splash_screen.dart';
+
 
 import 'model/Customer.dart';
 import 'model/admin.dart';
@@ -52,6 +52,7 @@ void main() async {
   await Hive.openBox<List<AdvanceEntry>>('advanceBox');
   await Hive.openBox<List<AdvanceOrganization>>('advanceOrganizationBox');
   await Hive.openBox<List<LoanEntry>>('loanEntryBox');
+  
   runApp(MyApp());
 }
 

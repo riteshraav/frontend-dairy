@@ -159,7 +159,7 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
           Fluttertoast.showToast(msg: "Milk Sale Saved");
          }
        });
-       saveToHive();
+       //saveToHive();
        clearAll();
      }
   }
@@ -198,12 +198,18 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
   }
 
   void clearAll() {
-    codeController.clear();
-    customerController.clear();
-    litersController.clear();
-    amountController.clear();
-    editingIndex = null;
+    print('in clear all');
+    litersController.text = "";
+    codeController.text = "";
+    print('code controller is fine');
+    customerController.text = "";
+        amountController.text = "";
+        editingIndex = null;
+
+    print('litre value is ${litersController.text}');
   }
+
+
 
   @override
   Widget build(BuildContext context) {

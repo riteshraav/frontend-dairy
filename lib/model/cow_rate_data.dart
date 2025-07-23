@@ -1,5 +1,5 @@
+import 'package:DairySpace/model/ratechartinfo.dart';
 import 'package:hive/hive.dart';
-import 'package:take8/model/ratechartinfo.dart';
 
 class CowRateData{
 

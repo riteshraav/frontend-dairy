@@ -130,8 +130,9 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:take8/widgets/appbar.dart';
-import 'package:take8/widgets/privacypolicy.dart';
+
+import '../../widgets/appbar.dart';
+import '../../widgets/privacypolicy.dart';
 
 class ContactProfilePage extends StatelessWidget {
   // ────────────────────────────────────────────────────────────────────

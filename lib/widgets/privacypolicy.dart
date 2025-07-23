@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take8/widgets/appbar.dart';
+
+import 'appbar.dart';
 
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({super.key});

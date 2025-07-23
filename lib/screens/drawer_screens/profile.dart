@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:take8/providers/avatar_provider.dart';
-import 'package:take8/widgets/appbar.dart';
 import '../../model/admin.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/avatar_provider.dart';
 import '../../screens/home_screen.dart';
+import '../../widgets/appbar.dart';
 import '../auth_screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {

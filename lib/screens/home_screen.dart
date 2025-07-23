@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import 'package:take8/model/buffalo_rate_data.dart';
-import 'package:take8/model/cow_rate_data.dart';
-import 'package:take8/providers/buffalo_ratechart_provider.dart';
-import 'package:take8/providers/cow_ratechart_provider.dart';
-import 'package:take8/screens/customer_advance_history.dart';
-import 'package:take8/screens/customer_loan_history.dart';
-import 'package:take8/screens/drawer_screens/new_custom_drawer.dart';
 import '../model/Customer.dart';
 import '../model/admin.dart';
+import '../model/buffalo_rate_data.dart';
 import '../model/cattleFeedPurchase.dart';
+import '../model/cow_rate_data.dart';
+import '../providers/buffalo_ratechart_provider.dart';
+import '../providers/cow_ratechart_provider.dart';
 import 'auth_screens/login_screen.dart';
 import 'cattlefeed_screens/cattleFeedSellScreen.dart';
 import 'cattlefeed_screens/cattlefeed_options.dart';
+import 'customer_advance_history.dart';
+import 'customer_loan_history.dart';
 import 'drawer_screens/contact_us_page.dart';
 import 'customer_screens/add_customer.dart';
 import 'customer_screens/customer_screen.dart';
 import 'customer_screens/search_customer.dart';
 import 'deduction_master.dart';
+import 'drawer_screens/new_custom_drawer.dart';
 import 'localMilkSalePage.dart';
 import 'milk_collection_page.dart';
 import 'drawer_screens/profile.dart';
@@ -41,6 +41,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = false;
   final List<Map<String, dynamic>> services = [
     {
       "title": "Collection",
@@ -131,6 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void loadData() async {
+    setState(() {
+      isLoading = true;
+    });
     Admin? admin = await AdminService().searchAdminAuth();
     if (admin == null) {
       // Navigator.of(context).pushAndRemoveUntil(
@@ -139,6 +143,9 @@ class _HomeScreenState extends State<HomeScreen> {
       // );
       print("admin is null////////////////////////////");
       Fluttertoast.showToast(msg: "admin is null");
+      setState(() {
+        false;
+      });
       return;
     }
 
@@ -153,7 +160,9 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (context) => LoginPage()),
               (route) => false,
         );
-
+      setState(() {
+        isLoading = false;
+      });
         return;
       }
       int i = 0;
@@ -164,23 +173,38 @@ class _HomeScreenState extends State<HomeScreen> {
       adminBox.put('admin', admin);
       print('admin added to box');
       customerBox.put('customers', customerList);
-      print('custommers added to box');
+      print('customers added to box');
       print("customer list size is ${customerList.length}");
+      var cowBox =  Hive.box<CowRateData>('cowBox');
+      print('cow box created ');
+      CowRateData? cowRateData = cowBox.get(admin.id!);
+      if(cowRateData != null)
+      {
+        Provider.of<CowRateChartProvider>(context,listen: false).updateAll(cowRateData);
+      }
+      else{
+        cowRateData == null;
+      }
+      print('cow rate data fetched');
       var  buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
       BuffaloRateData? buffaloRateData = buffaloBox.get(admin.id!);
       if(buffaloRateData != null)
         {
             Provider.of<BuffaloRatechartProvider>(context,listen: false).updateAll(buffaloRateData);
         }
-      var cowBox =  Hive.box<CowRateData>('cowBox');
-      CowRateData? cowRateData = cowBox.get(admin.id!);
-      if(cowRateData != null)
-        {
-            Provider.of<CowRateChartProvider>(context,listen: false).updateAll(cowRateData);
-        }
+      else{
+        buffaloRateData = null;
+      }
+
+
     } catch (e) {
       print("catch in custome  list function ${e.toString()}");
       throw e;
+    }
+    finally{
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -190,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: CustomWidgets.buildAppBar("New Binary Solution"),
       drawer: NewCustomDrawer(),
       backgroundColor: Colors.blue[50],
-      body: SingleChildScrollView(
+      body:isLoading?Center(child: CircularProgressIndicator()): SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(

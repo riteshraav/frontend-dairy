@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
-import 'package:take8/model/buffalo_rate_data.dart';
-import 'package:take8/providers/avatar_provider.dart';
-import 'package:take8/providers/buffalo_ratechart_provider.dart';
-import 'package:take8/widgets/privacypolicy.dart';
 import '../../providers/admin_provider.dart';
+import '../../providers/avatar_provider.dart';
 import '../../screens/drawer_screens/profile.dart';
 import '../../model/admin.dart';
+import '../../widgets/privacypolicy.dart';
 import '../auth_screens/login_screen.dart';
 import '../home_screen.dart';
 import 'contact_us_page.dart';

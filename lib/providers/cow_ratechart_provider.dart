@@ -1,13 +1,14 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
-import 'package:take8/model/admin.dart';
-import 'package:take8/model/cow_rate_data.dart';
-import 'package:take8/widgets/appbar.dart';
+import '../model/admin.dart';
+import '../model/cow_rate_data.dart';
 import '../model/ratechartinfo.dart';
+import '../widgets/appbar.dart';
 
 @HiveType(typeId: 11)
 class CowRateChartProvider extends ChangeNotifier {
@@ -25,6 +26,7 @@ class CowRateChartProvider extends ChangeNotifier {
   double? maximumCowSNF;
   double? maximumCowRate;
   double localMilkSaleCow=0;
+  Admin admin = CustomWidgets.currentAdmin();
 
   // Constructor
   CowRateChartProvider({
@@ -46,13 +48,24 @@ class CowRateChartProvider extends ChangeNotifier {
    var maximumCowFat,
    var maximumCowSNF,
    var maximumCowRate,
-      )async {
+      )async
+  {
     this.minimumCowFat = minimumCowFat;
     this.minimumCowSNF = minimumCowSNF;
     this.minimumCowRate = minimumCowRate;
     this.maximumCowFat = maximumCowFat;
     this.maximumCowSNF=maximumCowSNF;
     this.maximumCowRate=maximumCowRate;
+
+    var cowBox =  Hive.box<CowRateData>('cowBox');
+    CowRateData cowRateData = cowBox.get('cowRateData_${admin.id}') ?? CowRateData();
+    cowRateData.minimumCowFat = minimumCowFat;
+    cowRateData.minimumCowSNF = minimumCowSNF;
+    cowRateData.minimumCowRate = minimumCowRate;
+    cowRateData.maximumCowFat = maximumCowFat;
+    cowRateData.maximumCowSNF=maximumCowSNF;
+    cowRateData.maximumCowRate=maximumCowRate;
+    cowBox.put('cowRateData_${admin.id}', cowRateData);
     notifyListeners();
   }
   List<dynamic> getCowValues()
@@ -78,6 +91,7 @@ class CowRateChartProvider extends ChangeNotifier {
     minimumCowSNF = cowRateData.minimumCowSNF;
     minimumCowRate = cowRateData.minimumCowRate;
     localMilkSaleCow = cowRateData.morningQuantity;
+
     notifyListeners();
 
   }
@@ -100,44 +114,59 @@ class CowRateChartProvider extends ChangeNotifier {
    excelData =  rateChartHistory.where((rateChart)=>rateChart.date == date).first.rateChart;
 
   }
-  /// Function to pick an Excel file and convert it to List<List<String>>
+
   Future<void> pickExcelFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
 
-      // Pick an Excel file
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'], // Allow only Excel files
-      );
+    if (result != null && result.files.single.path != null) {
+      String filePath = result.files.single.path!;
+      Uint8List bytes = File(filePath).readAsBytesSync();
 
-      if (result != null && result.files.single.path != null) {
-        String filePath = result.files.single.path!;
+      // Save the file bytes to Hive
+      var box = Hive.box('rate_charts');
+      await box.put('cow_ratechart', bytes); // Store as Uint8List
 
-        // Read the Excel file
-        var bytes = File(filePath).readAsBytesSync();
-        var excel = Excel.decodeBytes(bytes);
-         name =  result.files.single.name;
-        // Convert Excel data to List<List<String>>
-        //List<List<String>> data = [];
-        excelData = [];
-        for (var sheetName in excel.tables.keys) {
-          var sheet = excel.tables[sheetName];
-          if (sheet != null) {
-            for (var row in sheet.rows) {
-              excelData.add(row.map((cell) => cell?.value?.toString() ?? '').toList());
-            }
+      // Decode Excel
+      var excel = Excel.decodeBytes(bytes);
+      name = result.files.single.name;
+      excelData = [];
+
+      for (var sheetName in excel.tables.keys) {
+        var sheet = excel.tables[sheetName];
+        if (sheet != null) {
+          for (var row in sheet.rows) {
+            excelData.add(
+              row.map((cell) => cell?.value?.toString() ?? '').toList(),
+            );
           }
         }
-        if(searchValue("2.00")) {
-          print('row is $row col is $col');
-        filePicked = true;
-          RateChartInfo  rateChartInfo = RateChartInfo(note:  'New Rate chart', rateChart: excelData, row: row!, col: col!,date: DateTime.now().toIso8601String());
-          rateChartHistory.add(rateChartInfo);
-
-        }
-        print("notified all about picked in exceldata");
-        notifyListeners();
       }
+      var cowBox =  Hive.box<CowRateData>('cowBox');
+      CowRateData cowRateData = cowBox.get('cowRateData_${admin.id}') ?? CowRateData();
+      cowRateData.excelData = excelData;
+      // You can keep your search logic
+      if (searchValue("2.00")) {
+        print('row is $row col is $col');
+        filePicked = true;
+
+        RateChartInfo rateChartInfo = RateChartInfo(
+          note: 'New Rate chart',
+          rateChart: excelData,
+          row: row!,
+          col: col!,
+          date: DateTime.now().toIso8601String(),
+        );
+
+        rateChartHistory.add(rateChartInfo);
+      }
+
+      print("Notified all about picked Excel");
+      notifyListeners();
     }
+  }
 
   /// Function to search for the first occurrence of 2.00
   bool searchValue(String searchValue) {

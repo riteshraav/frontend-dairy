@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take8/model/advancecustomerinfo.dart';
-import 'package:take8/model/advanceorganizationinfo.dart';
-import 'package:take8/screens/customer_advance_history.dart';
-import 'package:take8/service/customerAdvanceService.dart';
-import 'package:take8/service/loanentry_service.dart';
 import '../model/CustomerBalance.dart';
+import '../model/advancecustomerinfo.dart';
 import '../model/deduction.dart';
 import '../model/loancustomerinfo.dart';
 import '../model/milk_collection.dart';
 import '../service/CustomerBalanceService.dart';
+import '../service/customerAdvanceService.dart';
 import '../service/deduction_service.dart';
+import '../service/loanentry_service.dart';
 import '../service/mik_collection_service.dart';
 import '../widgets/appbar.dart';
 import '../model/admin.dart';
@@ -46,7 +44,7 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
   TextEditingController loanDeductionController = TextEditingController();
    LoanEntry? loanEntry ;
    double loanInterest = 0;
-   bool isLoading = true;
+   bool isLoading = false;
    double advanceInterest = 0;
    AdvanceEntry? advanceEntry;
   TextEditingController otherExpenseDeductionController =
@@ -69,73 +67,122 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
   CustomerBalance? currentCustomerBalance =
       CustomerBalance(adminId: "dummy", customerId: "dummy");
   void _searchDeductionInfo() async {
+    print("[SearchDeduction] Start");
+
     if (memberCodeController.text == "" ||
         fromDateController.text == "" ||
         toDateController.text == "") {
       Fluttertoast.showToast(msg: "Enter code and dates");
+      print("[SearchDeduction] Validation failed: Missing code or dates");
       return;
     }
+
+    print("[SearchDeduction] Inputs:");
+    print("  Member Code: ${memberCodeController.text}");
+    print("  From Date: ${fromDateController.text}");
+    print("  To Date: ${toDateController.text}");
+
     setState(() {
       isLoading = true;
     });
+
+    print("[SearchDeduction] Fetching milk collection list...");
     List<MilkCollection>? milkCollectionList = await MilkCollectionService()
-        .getAllForCustomerAuth(selectedCustomer.code!, admin.id!);
+        .getForCustomersWithSpecificationAuth([selectedCustomer.code!], from.toIso8601String(),to.toIso8601String(),admin.id!,true,true);
+
     if (milkCollectionList == null) {
+      print("[SearchDeduction] Milk collection list is null - logging out.");
       CustomWidgets.logout(context);
       setState(() {
         isLoading = false;
       });
       return;
     }
+    print("[SearchDeduction] Milk collection fetched: ${milkCollectionList.length} items");
+    milkCollectionList.forEach((entry)=> print(entry.date));
+    print("[SearchDeduction] Fetching customer balance...");
     currentCustomerBalance = await CustomerBalanceService()
         .getCustomerBalanceAuth(admin.id!, selectedCustomer.code!);
+
     if (currentCustomerBalance == null) {
+      print("[SearchDeduction] Customer balance is null - logging out.");
       CustomWidgets.logout(context, "something went wrong");
       setState(() {
         isLoading = false;
       });
       return;
     }
+
+    print("[SearchDeduction] Customer balance fetched successfully.");
+    print("  Loan Balance: ${currentCustomerBalance!.balanceLoan}");
+    print("  Advance Balance: ${currentCustomerBalance!.balanceAdvance}");
+    print("  Credit Milk: ${currentCustomerBalance!.balanceCreditMilk}");
+
     if (currentCustomerBalance!.adminId == 'dummy') {
       Fluttertoast.showToast(msg: "something went wrong");
+      print("[SearchDeduction] Dummy adminId detected");
     }
-    if(currentCustomerBalance?.balanceLoan != 0)
-      {
-        loanEntry = await LoanEntryService.getLoanEntryForCustomer(admin.id!,selectedCustomer.code!);
-        if(loanEntry != null)
-          {
-            loanInterest = calculateInterestFor(
-                loanEntry!.loanAmount ?? 0.0,
-                loanEntry!.interestRate ?? 0.0,
-                loanEntry!.date
-            );
 
-            loanInterest += loanEntry!.remainingInterest!;
-          }
+    if (currentCustomerBalance?.balanceLoan != 0) {
+      print("[SearchDeduction] Fetching loan entry...");
+      loanEntry = await LoanEntryService.getLoanEntryForCustomer(admin.id!, selectedCustomer.code!);
+
+      if (loanEntry != null) {
+        print("[SearchDeduction] Loan entry found");
+        print("  Loan Amount: ${loanEntry!.loanAmount}");
+        print("  Interest Rate: ${loanEntry!.interestRate}");
+        print("  Date: ${loanEntry!.date}");
+
+        loanInterest = calculateInterestFor(
+          loanEntry!.loanAmount ?? 0.0,
+          loanEntry!.interestRate ?? 0.0,
+          loanEntry!.date,
+        );
+
+        loanInterest += loanEntry!.remainingInterest!;
+        print("  Calculated Loan Interest: $loanInterest");
+      } else {
+        print("[SearchDeduction] No loan entry found");
       }
-    if(currentCustomerBalance?.balanceAdvance != 0)
-      {
-        advanceEntry = await CustomerAdvanceService.getForCustomer(admin.id!, selectedCustomer.code!);
-        if(loanEntry != null)
-        {
-          advanceInterest = calculateInterestFor(advanceEntry!.advanceAmount, advanceEntry!.interestRate, advanceEntry!.recentDeduction);
-          advanceInterest += advanceEntry!.remainingInterest;
-        }
+    }
+
+    if (currentCustomerBalance?.balanceAdvance != 0) {
+      print("[SearchDeduction] Fetching advance entry...");
+      advanceEntry = await CustomerAdvanceService.getForCustomer(admin.id!, selectedCustomer.code!);
+
+      if (advanceEntry != null) {
+        print("[SearchDeduction] Advance entry found");
+        print("  Advance Amount: ${advanceEntry!.advanceAmount}");
+        print("  Interest Rate: ${advanceEntry!.interestRate}");
+        print("  Last Deduction Date: ${advanceEntry!.recentDeduction}");
+
+        advanceInterest = calculateInterestFor(
+          advanceEntry!.advanceAmount,
+          advanceEntry!.interestRate,
+          advanceEntry!.recentDeduction,
+        );
+        advanceInterest += advanceEntry!.remainingInterest;
+        print("  Calculated Advance Interest: $advanceInterest");
+      } else {
+        print("[SearchDeduction] No advance entry found");
       }
-    // Filter the list based on date range
-    List<MilkCollection> filteredList =
-        milkCollectionList.where((milkCollection) {
-      DateTime collectionDate = DateTime.parse(
-          milkCollection.date!); // Assuming date is stored as String
+    }
+
+    print("[SearchDeduction] Filtering milk collection list by date range...");
+    List<MilkCollection> filteredList = milkCollectionList.where((milkCollection) {
+      DateTime collectionDate = DateTime.parse(milkCollection.date!);
       return collectionDate.isAfter(from.subtract(Duration(days: 1))) &&
           collectionDate.isBefore(to.add(Duration(days: 1)));
     }).toList();
 
-    // Calculate the sum of totalAmount
+    print("[SearchDeduction] Filtered list size: ${filteredList.length}");
+
+    totalAmount = 0;
     for (var milkCollection in filteredList) {
-      totalAmount +=
-          milkCollection.totalValue!; // Assuming totalAmount is a double
+      totalAmount += milkCollection.totalValue!;
     }
+
+    print("[SearchDeduction] Total Milk Bill Amount: $totalAmount");
 
     setState(() {
       isLoading = false;
@@ -143,11 +190,11 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
       cattleFeedBalanceController.text =
           (currentCustomerBalance!.balanceCattleFeed ?? "").toString();
       advanceBalanceController.text =
-         "${ currentCustomerBalance!.balanceAdvance} + $advanceInterest";
+      "${currentCustomerBalance!.balanceAdvance} + $advanceInterest";
       creditMilkBalanceController.text =
           currentCustomerBalance!.balanceCreditMilk.toString();
       loanBalanceController.text =
-      "${ currentCustomerBalance!.balanceLoan} + $loanInterest";
+      "${currentCustomerBalance!.balanceLoan} + $loanInterest";
       otherExpenseBalanceController.text =
           currentCustomerBalance!.balanceOtherExpense.toString();
       doctorVisitFeesBalanceController.text =
@@ -156,6 +203,8 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
           currentCustomerBalance!.balanceExpense.toString();
       totalBalController.text = currentCustomerBalance!.totalBalance.toString();
     });
+
+    print("[SearchDeduction] UI updated with final values");
   }
 
   @override

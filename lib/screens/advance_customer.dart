@@ -41,9 +41,13 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
     dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   }
   List<AdvanceEntry> list = [];
-  void _saveData() {
+  void _saveData() async{
     List<AdvanceEntry> advanceEntry = advanceBox.get('advance')??[];
-
+    if(double.parse(advanceAmountController.text) > admin.currentBalance!)
+      {
+        Fluttertoast.showToast(msg: "Add enough balance first");
+        return;
+      }
     if(advanceAmountController.text != "" ) {
       final entry = AdvanceEntry(
           date: DateTime.now().toIso8601String(),
@@ -57,6 +61,21 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
           remainingInterest: 0.0, recentDeduction: DateTime.now().toIso8601String()
       );
 
+
+      setState(() {
+        isLoading = true;
+      });
+     bool added = await CustomerAdvanceService.addCustomerAdvance(entry);
+      setState(() {
+        isLoading = false;
+      });
+      if(!added)
+        {
+          print('faild to save');
+          Fluttertoast.showToast(msg: "Info saved");
+          return;
+      }
+      print('saved');
       if (isEditing && editingIndex != null) {
         // **Update existing entry instead of adding a new one**
         entry.date = selectedEntry.date;
@@ -69,15 +88,8 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
         // **Add new entry**
         advanceEntry.add(entry);
       }
-      setState(() {
-        isLoading = true;
-      });
-      CustomerAdvanceService.addCustomerAdvance(entry);
-      setState(() {
-        isLoading = false;
-      });
-      advanceBox.put('advance', advanceEntry);
-
+      admin.currentBalance = admin.currentBalance! - double.parse(advanceAmountController.text);
+      CustomWidgets.updateAdmin(admin, context);
       setState(() {
        list = advanceEntry;
      });
@@ -85,6 +97,7 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
     }
     else{
       Fluttertoast.showToast(msg: "Enter advance amount");
+      return;
     }
 
     _clearFields();

@@ -143,10 +143,10 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                           maximumCowSNFController.text.isEmpty ||
                           maximumCowRateController.text.isEmpty
                       )
-                        {
-                          Fluttertoast.showToast(msg: "Add all values");
-                          return;
-                        }
+                      {
+                        Fluttertoast.showToast(msg: "Add all values");
+                        return;
+                      }
                       rateChartModel.setValues(
                         minimumCowFatController.text == "" ? "" : textToDouble(minimumCowFatController.text),
                         textToDouble(minimumCowSNFController.text),
@@ -257,9 +257,9 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                   CustomWidgets.customButton(text: "Open File", onPressed: () {
                     // TODO: Add logic to open the file if needed
                     if(rateChartModel.filePicked)
-                      {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ExcelViewer('buffalo')));
-                      }
+                    {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ExcelViewer('buffalo')));
+                    }
                     else{
                       Fluttertoast.showToast(msg: "Upload file first");
                     }
@@ -401,4 +401,3 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
     );
   }
 }
-

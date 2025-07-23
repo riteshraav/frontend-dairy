@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take8/model/cattleFeedPurchase.dart';
-import 'package:take8/service/cattleFeedPurchaseService.dart';
 import '../../model/admin.dart';
+import '../../model/cattleFeedPurchase.dart';
+import '../../service/cattleFeedPurchaseService.dart';
 import '../../widgets/appbar.dart';
 import 'cattleFeedPurchaseScreen.dart';
 

@@ -2,11 +2,12 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/widgets.dart';
-import 'package:take8/model/localsale.dart';
-import 'package:take8/widgets/appbar.dart';
+
+import '../model/localsale.dart';
 import '../model/milk_collection.dart';
 import '../model/Customer.dart';
 import '../model/admin.dart';
+import '../widgets/appbar.dart';
 
 
 class LocalSaleReport {

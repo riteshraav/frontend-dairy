@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take8/api/ledger_report_generation.dart';
-import 'package:take8/api/local_sale_report.dart';
-import 'package:take8/model/cattleFeedSell.dart';
-import 'package:take8/model/localsale.dart';
-import 'package:take8/service/cattleFeedSellService.dart';
-import 'package:take8/service/local_milk_sale_service.dart';
 import '../../api/customer_summary_report.dart';
 import '../../api/dairy_summary_report.dart';
 import '../../api/customer_billing_report.dart';
 import '../../api/aavak_report_generation.dart';
+import '../../api/ledger_report_generation.dart';
+import '../../api/local_sale_report.dart';
 import '../../model/CustomerBalance.dart';
+import '../../model/cattleFeedSell.dart';
+import '../../model/localsale.dart';
 import '../../model/milk_collection.dart';
 import '../../screens/drawer_screens/new_custom_drawer.dart';
 import '../../service/CustomerBalanceService.dart';
+import '../../service/cattleFeedSellService.dart';
 import '../../service/deduction_service.dart';
+import '../../service/local_milk_sale_service.dart';
 import '../../service/mik_collection_service.dart';
 import '../../widgets/appbar.dart';
 import 'package:intl/intl.dart';
@@ -406,6 +406,9 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
         case "Ledger Report":
           generateLedgerReport();
           break;
+        case "Local sale Report":
+          generateLocalSaleReport();
+          break;
         default :
           generateSummary();
 
@@ -434,6 +437,8 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
         case "Ledger Report":
           generateLedgerReport();
           break;
+        case "Local sale Report":
+          generateLocalSaleReport();
         default :
           generateSummary();
 

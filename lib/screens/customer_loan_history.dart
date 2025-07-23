@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:take8/model/loancustomerinfo.dart';
-import 'package:take8/screens/loan_customer.dart';
-import 'package:take8/service/loanentry_service.dart';
+
 
 import '../model/admin.dart';
+import '../model/loancustomerinfo.dart';
+import '../service/loanentry_service.dart';
 import '../widgets/appbar.dart';
+import 'loan_customer.dart';
 class CustomerLoanHistory extends StatefulWidget {
   List<LoanEntry>? newLoanEntries;
   CustomerLoanHistory({super.key , this.newLoanEntries});

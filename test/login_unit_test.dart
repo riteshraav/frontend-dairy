@@ -22,9 +22,9 @@
 //     });
 //   });
 // }
+import 'package:DairySpace/model/admin.dart';
+import 'package:DairySpace/service/admin_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:take8/model/admin.dart';
-import 'package:take8/service/admin_service.dart';
 
 void main(){
   group('Login page test group:', (){

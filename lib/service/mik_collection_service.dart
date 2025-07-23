@@ -68,34 +68,6 @@ class MilkCollectionService{
         body: body
     );
   }
-  Future<bool> saveInfo(MilkCollection milkCollection)async {
-    final url = Uri.parse("${CustomWidgets.getIp()}/collection/add");
-    try{
-      final response = await http.post(url,
-          headers: {"Content-Type": "application/json"},
-          body: json.encode({
-            "adminId": milkCollection.adminId,
-            "customerId": milkCollection.customerId,
-            "quantity": milkCollection.quantity,
-            "fat": milkCollection.fat,
-            "snf": milkCollection.snf,
-            "rate": milkCollection.rate,
-            "totalValue": milkCollection.totalValue,
-            "milkType": milkCollection.milkType,
-            "time": milkCollection.time,
-            "date": milkCollection.date
-          }));
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        false;
-      }
-    }
-    catch(e){
-      rethrow;
-    }
-    return false;
-  }
   Future<String?> saveInfoAuth(MilkCollection milkCollection)async {
     String? accessToken = await verifyAccessToken();
     if(accessToken == null) {
@@ -119,10 +91,12 @@ class MilkCollectionService{
       }
     }
     catch(e){
+      print('exceptiion in adding collection $e');
       rethrow;
     }
     return "Unsuccessful";
-  }  Future<String?> deleteCollection(String id)async {
+  }
+  Future<String?> deleteCollection(String id)async {
     String? accessToken = await verifyAccessToken();
     if(accessToken == null) {
       return null;

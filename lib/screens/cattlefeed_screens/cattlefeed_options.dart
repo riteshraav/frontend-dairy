@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:take8/model/cattleFeedSupplier.dart';
-import 'package:take8/screens/cattlefeed_screens/cattlefeed_purchase_history.dart';
-import 'package:take8/screens/cattlefeed_screens/cattlefeed_sell_history.dart';
-import 'package:take8/service/cattleFeedSupplierService.dart';
 import '../../screens/cattlefeed_screens/addCattleFeedSupplier.dart';
 import '../../screens/cattlefeed_screens/cattleFeedPurchaseScreen.dart';
 import '../../screens/drawer_screens/new_custom_drawer.dart';
@@ -13,6 +9,8 @@ import '../../service/cattleFeedPurchaseService.dart';
 import '../../widgets/appbar.dart';
 import '../drawer_screens/drawer_screen.dart';
 import 'cattleFeedSellScreen.dart';
+import 'cattlefeed_purchase_history.dart';
+import 'cattlefeed_sell_history.dart';
 
 class CattleFeedOptions extends StatelessWidget {
   Admin admin = CustomWidgets.currentAdmin();

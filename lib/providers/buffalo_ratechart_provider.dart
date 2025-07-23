@@ -3,9 +3,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
 import 'package:hive/hive.dart';
-import 'package:take8/model/buffalo_rate_data.dart';
 
 import '../model/admin.dart';
+import '../model/buffalo_rate_data.dart';
 import '../model/ratechartinfo.dart';
 import '../widgets/appbar.dart';
 import 'cow_ratechart_provider.dart';

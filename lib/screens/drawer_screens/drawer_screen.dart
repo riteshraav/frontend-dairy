@@ -1,29 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:take8/screens/customer_advance_history.dart';
-import 'package:take8/screens/customer_loan_history.dart';
-import '../../model/cattleFeedPurchase.dart';
-import '../../model/cattleFeedSupplier.dart';
-import '../../model/milk_collection.dart';
-import '../../screens/advance_customer.dart';
-import '../../screens/cattlefeed_screens/cattleFeedPurchaseScreen.dart';
-import '../../screens/cattlefeed_screens/addCattleFeedSupplier.dart';
-import '../../screens/cattlefeed_screens/cattleFeedSellScreen.dart';
-import '../../screens/customer_screens/customer_screen.dart';
-import '../../screens/auth_screens/login_screen.dart';
-import '../../screens/generate_reports/aavak_report.dart';
 import '../../screens/home_screen.dart';
-import '../../screens/loan_customer.dart';
-import '../../screens/milk_collection_page.dart';
-import '../../screens/localMilkSalePage.dart';
-import '../../screens/update_ratechart.dart';
-import '../../service/cattleFeedPurchaseService.dart';
-import '../../model/cattleFeedSell.dart';
-import '../../model/Customer.dart';
+
 import '../../model/admin.dart';
-import '../../service/cattleFeedSupplierService.dart';
-import '../../service/mik_collection_service.dart';
+
 import '../../widgets/appbar.dart';
 import '../advance_organization.dart';
+import '../customer_advance_history.dart';
+import '../customer_loan_history.dart';
 
 class CustomDrawer extends StatelessWidget {
   Admin admin = CustomWidgets.currentAdmin();

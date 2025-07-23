@@ -195,22 +195,9 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
         date: date);
     //  bool saved = await milkCollectionService.saveInfo(milkCollection);
     String? status = await milkCollectionService.saveInfoAuth(milkCollection);
-    String sms = "\nDear Customer!\n"
-        "Your today's milk collection info is:\n"
-        "Dairy name : ${widget.admin.dairyName}\n"
-        "Code : ${selectedCustomer.code}\n"
-        "Time : ${milkCollection.time}\n"
-        "Animal : ${milkCollection.milkType}\n"
-        "Quantity: ${milkCollection.quantity}\n"
-        "Fat : ${milkCollection.fat}\n"
-        "SNF : ${milkCollection.snf}\n"
-        "Rate: ${milkCollection.rate}\n"
-        "Total value : ${milkCollection.totalValue}\n"
-        "Thank you";
-
     if(status == null)
     {
-      Fluttertoast.showToast(msg: "null");
+      Fluttertoast.showToast(msg: "Error");
       return;
     }
     else if (status != "Unsuccessful") {
@@ -241,12 +228,22 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
       if(selectedCustomer.buffalo! && selectedCustomer.cow! && _cquantityController.text == "")
       {
         FocusScope.of(context).requestFocus(cowFocusNode);
-
       }
       else {
         FocusScope.of(context).requestFocus(sFocusNode);
       }
-
+      String sms = "\nDear Customer!\n"
+          "Your today's milk collection info is:\n"
+          "Dairy name : ${widget.admin.dairyName}\n"
+          "Code : ${selectedCustomer.code}\n"
+          "Time : ${milkCollection.time}\n"
+          "Animal : ${milkCollection.milkType}\n"
+          "Quantity: ${milkCollection.quantity}\n"
+          "Fat : ${milkCollection.fat}\n"
+          "SNF : ${milkCollection.snf}\n"
+          "Rate: ${milkCollection.rate}\n"
+          "Total value : ${milkCollection.totalValue}\n"
+          "Thank you";
       bool sent = await SmsService.sendSms(selectedCustomer.phone!, sms);
       if (sent) {
         Fluttertoast.showToast(msg: "Msg sent");
@@ -411,7 +408,10 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
                                         fillColor: Colors.white,
                                         labelText: "Code",
                                         border: OutlineInputBorder(),
-                                        suffixIcon: Icon(Icons.search),
+                                        suffixIcon: IconButton(icon: Icon(Icons.clear),
+                                          onPressed: () { codeController.clear(); nameController.clear(); setState(() {
+
+                                        }); },),
                                       ),
                                     );
                                   },
@@ -443,6 +443,10 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
                                         fillColor: Colors.white,
                                         labelText: "Customer Name",
                                         border: OutlineInputBorder(),
+                                        suffixIcon: IconButton(icon: Icon(Icons.clear),
+                                          onPressed: () { codeController.clear(); nameController.clear(); setState(() {
+
+                                          }); },)
                                       ),
                                     );
                                   },

@@ -376,11 +376,18 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
           MaterialPageRoute(builder: (context) => LoginPage()),
               (route) => false, // Clears entire stack
         );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error")));
+
         return;
       }
       if(status != "Unsuccessful")
         {
             currentDateCollection.remove(collection);
+            setState(() {
+
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Changes saved!")));
+
         }
 
 
@@ -397,7 +404,6 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
           CustomWidgets.customButton(text: "Delete", onPressed: () {
             Navigator.of(ctx).pop();
             deleteCollection(collection);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Changes saved!")));
           }, buttonBackgroundColor: Colors.redAccent)
 
         ],

@@ -1,10 +1,9 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:take8/model/admin.dart';
-import 'package:take8/screens/home_screen.dart';
-import 'package:take8/service/admin_service.dart';
 import '../screens/auth_screens/login_screen.dart';
+import '../service/admin_service.dart';
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override

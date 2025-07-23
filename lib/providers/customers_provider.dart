@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:take8/widgets/appbar.dart';
 import '../model/Customer.dart';
+import '../widgets/appbar.dart';
 
 class CustomerProvider with ChangeNotifier{
 

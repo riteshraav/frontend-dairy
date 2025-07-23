@@ -3,8 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/intl.dart';
-import 'package:take8/screens/auth_screens/login_screen.dart';
-import 'package:take8/service/advanceOrganizationService.dart';
+
+import '../service/advanceOrganizationService.dart';
 import '../widgets/appbar.dart';
 import '../model/admin.dart';
 import '../model/advanceorganizationinfo.dart';

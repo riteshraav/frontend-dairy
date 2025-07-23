@@ -440,6 +440,11 @@ class _LoanScreenState extends State<LoanScreen> {
   }
 
   void _saveData() async {
+    if(admin.currentBalance! < double.parse(LoanAmountController.text))
+      {
+        Fluttertoast.showToast(msg: "loan amount is higher than balance");
+        return;
+      }
     final loanEntry = LoanEntry(
       remainingInterest: 0.0,
       recentDeduction: DateTime.now().toIso8601String(),
@@ -464,11 +469,13 @@ class _LoanScreenState extends State<LoanScreen> {
     });
     bool isSuccessful = await LoanEntryService.addLoanEntry(loanEntry);
     setState(() {
-      isLoading = true;
+      isLoading = false;
     });
     if (isSuccessful) {
       Fluttertoast.showToast(msg: "Entry saved");
     }
+    admin.currentBalance =admin.currentBalance! - double.parse(LoanAmountController.text);
+    CustomWidgets.updateAdmin(admin, context);
     _clearFields();
     setState(() {});
   }
@@ -533,9 +540,9 @@ class _LoanScreenState extends State<LoanScreen> {
 
   void _clearFields() {
     setState(() {
+      LoanAmountController.clear();
       codeController.clear();
       nameController.clear();
-      LoanAmountController.clear();
       noteController.clear();
       interestRateController.clear();
       selectedPaymentMethod = "Credit";

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:take8/providers/buffalo_ratechart_provider.dart';
-import 'package:take8/providers/cow_ratechart_provider.dart';
 import '../../widgets/appbar.dart';
 import '../model/ratechartinfo.dart';
+import '../providers/buffalo_ratechart_provider.dart';
+import '../providers/cow_ratechart_provider.dart';
 
 class ExcelViewer extends StatefulWidget {
   final String excelType;
