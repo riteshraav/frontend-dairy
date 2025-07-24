@@ -42,6 +42,8 @@ void main() async {
   Hive.registerAdapter(AdvanceEntryAdapter());
   Hive.registerAdapter(AdvanceOrganizationAdapter());
   Hive.registerAdapter(LoanEntryAdapter());
+  Hive.registerAdapter(CowRateDataAdapter());
+  Hive.registerAdapter(BuffaloRateDataAdapter());
 
 
   await Hive.openBox<Admin>('adminBox');
@@ -52,7 +54,9 @@ void main() async {
   await Hive.openBox<List<AdvanceEntry>>('advanceBox');
   await Hive.openBox<List<AdvanceOrganization>>('advanceOrganizationBox');
   await Hive.openBox<List<LoanEntry>>('loanEntryBox');
-  
+  await Hive.openBox<CowRateData>('cowBox');
+  await Hive.openBox<BuffaloRateData>('buffaloBox');
+
   runApp(MyApp());
 }
 

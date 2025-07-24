@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'loancustomerinfo.dart';
+part of '../model/loancustomerinfo.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
@@ -20,11 +20,11 @@ class LoanEntryAdapter extends TypeAdapter<LoanEntry> {
       date: fields[0] as String,
       customerId: fields[1] as String,
       adminId: fields[2] as String,
-      loanAmount: fields[3] as double,
+      loanAmount: fields[3] as double?,
       note: fields[4] as String,
-      interestRate: fields[5] as double,
+      interestRate: fields[5] as double?,
       modeOfPayback: fields[6] as String,
-      remainingInterest: fields[7] as double,
+      remainingInterest: fields[7] as double?,
       recentDeduction: fields[8] as String,
     );
   }

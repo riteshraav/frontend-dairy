@@ -714,15 +714,15 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text(morningBuffaloQuantity.toStringAsFixed(2), style: TextStyle(color: Colors.black)),
+              child: Text(morningBuffaloQuantity.toStringAsFixed(3), style: TextStyle(color: Colors.black)),
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text(morningCowQuantity.toStringAsFixed(2), style: TextStyle(color: Colors.black)),
+              child: Text(morningCowQuantity.toStringAsFixed(3), style: TextStyle(color: Colors.black)),
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text((morningBuffaloQuantity + morningCowQuantity).toStringAsFixed(2), style: TextStyle(color: Colors.black)),
+              child: Text((morningBuffaloQuantity + morningCowQuantity).toStringAsFixed(3), style: TextStyle(color: Colors.black)),
             ),
           ],
         ),
@@ -737,15 +737,15 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
 
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text(eveningBuffaloQuantity.toStringAsFixed(2), style: TextStyle(color: Colors.black)),
+              child: Text(eveningBuffaloQuantity.toStringAsFixed(3), style: TextStyle(color: Colors.black)),
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text(eveningCowQuantity.toStringAsFixed(2), style: TextStyle(color: Colors.black)),
+              child: Text(eveningCowQuantity.toStringAsFixed(3), style: TextStyle(color: Colors.black)),
             ),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text((eveningBuffaloQuantity + eveningCowQuantity).toStringAsFixed(2), style: TextStyle(color: Colors.black)),
+              child: Text((eveningBuffaloQuantity + eveningCowQuantity).toStringAsFixed(3), style: TextStyle(color: Colors.black)),
             ),
           ],
         ),

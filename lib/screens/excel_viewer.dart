@@ -1,6 +1,10 @@
+import 'package:DairySpace/model/buffalo_rate_data.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/appbar.dart';
+import '../model/admin.dart';
+import '../model/cow_rate_data.dart';
 import '../model/ratechartinfo.dart';
 import '../providers/buffalo_ratechart_provider.dart';
 import '../providers/cow_ratechart_provider.dart';
@@ -20,8 +24,8 @@ class _ExcelViewerState extends State<ExcelViewer> {
   late int originalRow;
   late int originalCol;
   late int curCol;
-  String? _fileName;
-  bool _isLoading = false;
+  bool isLoading = false;
+  bool _excelData = false;
   bool _hasChanges = false;
   bool isAdjusting = false;
   TextEditingController _adjustController = TextEditingController();
@@ -29,44 +33,51 @@ class _ExcelViewerState extends State<ExcelViewer> {
   int? _selectedRowIndex;
   bool? _isChangeEntire;
   final Map<String, List<List<String>>> _rateHistory = {};
-  String? _selectedHistoryKey;
   bool fromHistory = false;
-
+  Admin admin = CustomWidgets.currentAdmin();
   @override
   void initState() {
     super.initState();
+    setState(() {
+      isLoading = true;
+    });
     _initializeExcelData();
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void _initializeExcelData() {
+
     setState(() {
       if(widget.excelType == "cow") {
-     excel = Provider.of<CowRateChartProvider>(context, listen: false)
-            .excelData
-            .map((row) => List<String>.from(row))
-            .toList();
-        curRow = Provider.of<CowRateChartProvider>(context,listen: false).row!;
-        curCol = Provider.of<CowRateChartProvider>(context,listen: false).col!;
+        var cowBox =  Hive.box<CowRateData>('cowBox');
+        CowRateData cowRateData = cowBox.get('cowRateData_${admin.id}') ?? CowRateData();
+     excel = cowRateData.excelData;
+        curRow =cowRateData.row;
+        curCol = cowRateData.col;
+        _excelData = true;
       }
       else{
-      excel = Provider.of<BuffaloRatechartProvider>(context, listen: false)
-            .excelData
-            .map((row) => List<String>.from(row))
-            .toList();
-        curRow = Provider.of<BuffaloRatechartProvider>(context,listen: false).row!;
-        curCol = Provider.of<BuffaloRatechartProvider>(context,listen: false).col!;
+        var buffaloBox =  Hive.box<BuffaloRateData>('buffaloBox');
+        BuffaloRateData buffaloRateData = buffaloBox.get('buffaloRateData_${admin.id}') ?? BuffaloRateData();
+        excel = buffaloRateData.excelData;
+        curRow =buffaloRateData.row!;
+        curCol = buffaloRateData.col!;
+        _excelData = true;
       }
       originalRow = curRow;
       originalCol = curCol;
       originalExcel =  excel.map((subList) => List<String>.from(subList)).toList();
-      _isLoading = true;
-      _fileName = null;
+
       _hasChanges = false;
       _selectedColumnIndex = null;
       _selectedRowIndex = null;
       _isChangeEntire = null;
       _rateHistory.clear();
+
     });
+
   }
   RateChartInfo? selectedRateChart;
   void _showAdjustmentOptionDialog() {
@@ -370,7 +381,7 @@ class _ExcelViewerState extends State<ExcelViewer> {
 
     return Consumer<CowRateChartProvider>(
         builder:(context,proider,child){
-          return (proider.filePicked )?Column(
+          return (_excelData )?Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(10),
@@ -423,7 +434,9 @@ class _ExcelViewerState extends State<ExcelViewer> {
               ),
             ],
           ):
-          Text("Rate chart is not uploaded ");
+          Center(child: Text("Rate chart is not uploaded ",
+          style: TextStyle(fontWeight: FontWeight.bold),
+          ));
         }
     );
   }
@@ -505,7 +518,7 @@ class _ExcelViewerState extends State<ExcelViewer> {
             if (_hasChanges) IconButton(icon: Icon(Icons.save, color: Colors.white), onPressed: _saveChangesDialog),
           ],
         ),
-        body: (widget.excelType == 'cow')?cowExcelProvider():buffaloExcelProvider(),
+        body: isLoading?Center(child: CircularProgressIndicator()): (widget.excelType == 'cow')?cowExcelProvider():buffaloExcelProvider(),
       ),
     );
   }

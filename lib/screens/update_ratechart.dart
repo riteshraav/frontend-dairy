@@ -16,8 +16,9 @@ class UpdateRatechart extends StatefulWidget {
 }
 
 
-class _UpdateRatechartState extends State<UpdateRatechart> {
+class _UpdateRatechartState extends State<UpdateRatechart> with WidgetsBindingObserver{
   int _selectedIndex = 0;
+  bool isLoading = false;
   // Controllers for Cow Inputs
   final TextEditingController minimumCowFatController = TextEditingController();
   final TextEditingController minimumCowSNFController = TextEditingController();
@@ -87,6 +88,7 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     Future.microtask(() {
       final buffaloList = Provider.of<BuffaloRatechartProvider>(context, listen: false).getBuffaloValues();
       final cowList = Provider.of<CowRateChartProvider>(context, listen: false).getCowValues();
@@ -105,6 +107,21 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
         maximumCowRateController.text = cowList[5].toString();
       });
     });
+  }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // Save current state if needed
+      print("App paused");
+    } else if (state == AppLifecycleState.resumed) {
+      // Restore state if needed
+      print("App resumed");
+    }
   }
 
   @override
@@ -175,8 +192,12 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                     rateChartModel.pickExcelFile();
                   }),
                   SizedBox(height: 10),
-                  CustomWidgets.customButton(text: "Open File", onPressed: () {
+                  if(!isLoading)
+                  CustomWidgets.customButton(text: "Open File",onPressed:() {
                     // TODO: Add logic to open the file if needed
+                    setState(() {
+                      isLoading = true;
+                    });
                     if(rateChartModel.filePicked) {
                       Navigator.push(context, MaterialPageRoute(builder: (
                           context) => ExcelViewer('cow')));
@@ -184,7 +205,12 @@ class _UpdateRatechartState extends State<UpdateRatechart> {
                     else{
                       Fluttertoast.showToast(msg: "Upload rate chart first");
                     }
-                  }),
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }, ),
+                  if(isLoading)
+                    CircularProgressIndicator()
                 ],
               ),
             ],

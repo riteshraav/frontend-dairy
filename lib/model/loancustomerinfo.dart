@@ -72,7 +72,7 @@
 //   }
 // }
 import 'package:hive/hive.dart';
-part 'loancustomerinfo.g.dart';
+part '../hive/loancustomerinfo.g.dart';
 
 @HiveType(typeId: 8)
 class LoanEntry extends HiveObject {

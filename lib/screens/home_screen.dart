@@ -132,76 +132,97 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void loadData() async {
+    print("========== loadData START ==========");
     setState(() {
       isLoading = true;
     });
+
+    // Step 1: Fetch Admin
+    print("Fetching admin...");
     Admin? admin = await AdminService().searchAdminAuth();
     if (admin == null) {
-      // Navigator.of(context).pushAndRemoveUntil(
-      //   MaterialPageRoute(builder: (context) => LoginPage()),
-      //       (route) => false,
-      // );
-      print("admin is null////////////////////////////");
-      Fluttertoast.showToast(msg: "admin is null");
+      print("[ERROR] Admin is null!");
+      Fluttertoast.showToast(msg: "Admin is null, redirecting to login.");
       setState(() {
-        false;
+        isLoading = false;
       });
       return;
     }
+    print("Admin fetched: ${admin.id}, ${admin.name}");
 
+    // Step 2: Open Hive Boxes
+    print("Opening Hive boxes...");
     var adminBox = Hive.box<Admin>('adminBox');
     var customerBox = Hive.box<List<Customer>>('customerBox');
+    var cowBox = Hive.box<CowRateData>('cowBox');
+    var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
+    print("Hive boxes opened.");
+
+    // Step 3: Fetch Customers
+    print("Fetching customers...");
     List<Customer>? customerList = [];
     try {
       customerList = await CustomerService.findAllCustomersAuth();
-      if (customerList == null) {
-        print("customers is null////////////////////////////");
+
+      if (customerList == null || customerList.isEmpty) {
+        print("[ERROR] Customer list is null or empty!");
+        Fluttertoast.showToast(msg: "Customer list is null.");
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => LoginPage()),
               (route) => false,
         );
-      setState(() {
-        isLoading = false;
-      });
+        setState(() {
+          isLoading = false;
+        });
         return;
       }
+
+      print("Customer list fetched. Total: ${customerList.length}");
       int i = 0;
-      customerList.forEach((c)=> print("${c.name} ${c.code} ${i++}"));
-      print('customer list is here');
+      for (var c in customerList) {
+        print("Customer[$i]: Name=${c.name}, Code=${c.code}");
+        i++;
+      }
+
+      print("Sorting customer list...");
       customerList.sort((a, b) => int.parse(a.code!).compareTo(int.parse(b.code!)));
-      print('customer list sorted');
+      print("Customer list sorted.");
+
+      // Step 4: Save to Hive
+      print("Saving admin and customer list to Hive...");
       adminBox.put('admin', admin);
-      print('admin added to box');
       customerBox.put('customers', customerList);
-      print('customers added to box');
-      print("customer list size is ${customerList.length}");
-      var cowBox =  Hive.box<CowRateData>('cowBox');
-      print('cow box created ');
-      CowRateData? cowRateData = cowBox.get(admin.id!);
-      if(cowRateData != null)
-      {
-        Provider.of<CowRateChartProvider>(context,listen: false).updateAll(cowRateData);
-      }
-      else{
-        cowRateData == null;
-      }
-      print('cow rate data fetched');
-      var  buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
-      BuffaloRateData? buffaloRateData = buffaloBox.get(admin.id!);
-      if(buffaloRateData != null)
-        {
-            Provider.of<BuffaloRatechartProvider>(context,listen: false).updateAll(buffaloRateData);
-        }
-      else{
-        buffaloRateData = null;
+      print("Data saved to Hive successfully.");
+
+      // Step 5: Cow Rate Data
+      print("Fetching CowRateData from cowBox for adminId: ${admin.id}");
+      CowRateData? cowRateData = cowBox.get('cowRateData_${admin.id}');
+      if (cowRateData != null) {
+        print('${cowRateData.filePicked} filepicked for cow for ${admin.id}');
+
+        print("CowRateData found. Updating Provider...");
+        Provider.of<CowRateChartProvider>(context, listen: false).updateAll(cowRateData);
+      } else {
+        print("[WARN] CowRateData not found for admin.");
       }
 
+      // Step 6: Buffalo Rate Data
+      print("Fetching BuffaloRateData from buffaloBox for adminId: ${admin.id}");
+      BuffaloRateData? buffaloRateData = buffaloBox.get('buffaloRateData_${admin.id}');
+      if (buffaloRateData != null) {
+        print('${buffaloRateData.filePicked} filepicked for buffalo for ${admin.id}');
 
-    } catch (e) {
-      print("catch in custome  list function ${e.toString()}");
-      throw e;
-    }
-    finally{
+        print("BuffaloRateData found. Updating Provider...");
+        Provider.of<BuffaloRatechartProvider>(context, listen: false).updateAll(buffaloRateData);
+      } else {
+        print("[WARN] BuffaloRateData not found for admin.");
+      }
+
+    } catch (e, stacktrace) {
+      print("[EXCEPTION] in loadData: $e");
+      print("Stacktrace:\n$stacktrace");
+    } finally {
+      print("========== loadData END ==========");
       setState(() {
         isLoading = false;
       });

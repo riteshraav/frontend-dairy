@@ -1,8 +1,11 @@
+import 'package:DairySpace/providers/cow_ratechart_provider.dart';
+import 'package:DairySpace/service/AdminAuthService.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_provider.dart';
 import '../../providers/avatar_provider.dart';
+import '../../providers/buffalo_ratechart_provider.dart';
 import '../../screens/drawer_screens/profile.dart';
 import '../../model/admin.dart';
 import '../../widgets/privacypolicy.dart';
@@ -72,7 +75,9 @@ class NewCustomDrawer extends StatelessWidget {
               ),
             ),
             onTap: () {
-         //     BuffaloRateData buffaloRateData = Provider.of<BuffaloRatechartProvider>(context,listen: false).updateBuffaloRateData();
+              AdminAuthService().deleteTokens();
+              Provider.of<BuffaloRatechartProvider>(context, listen: false).clearAllData();
+              Provider.of<CowRateChartProvider>(context, listen: false).clearAllData();
 
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => LoginPage()),

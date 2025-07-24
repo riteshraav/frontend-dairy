@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import '../model/admin.dart';
 import '../model/cow_rate_data.dart';
@@ -12,7 +11,6 @@ import '../widgets/appbar.dart';
 
 @HiveType(typeId: 11)
 class CowRateChartProvider extends ChangeNotifier {
-
   List<List<String>> excelData = [];
   bool filePicked = false;
   List<RateChartInfo> rateChartHistory  = [];
@@ -26,7 +24,6 @@ class CowRateChartProvider extends ChangeNotifier {
   double? maximumCowSNF;
   double? maximumCowRate;
   double localMilkSaleCow=0;
-  Admin admin = CustomWidgets.currentAdmin();
 
   // Constructor
   CowRateChartProvider({
@@ -50,6 +47,7 @@ class CowRateChartProvider extends ChangeNotifier {
    var maximumCowRate,
       )async
   {
+    Admin admin = CustomWidgets.currentAdmin();
     this.minimumCowFat = minimumCowFat;
     this.minimumCowSNF = minimumCowSNF;
     this.minimumCowRate = minimumCowRate;
@@ -79,6 +77,7 @@ class CowRateChartProvider extends ChangeNotifier {
     list.add(maximumCowRate?? "");
     return list;
   }
+
   void updateAll(CowRateData cowRateData){
     excelData = cowRateData.excelData;
     rateChartHistory = cowRateData.rateChartHistory ?? [];
@@ -94,6 +93,30 @@ class CowRateChartProvider extends ChangeNotifier {
 
     notifyListeners();
 
+  }
+  void clearAllData() {
+    print("Clearing all CowRateChartProvider data...");
+
+    excelData = [];
+    filePicked = false;
+    rateChartHistory = [];
+
+    row = null;
+    col = null;
+
+    name = "";
+
+    minimumCowFat = null;
+    minimumCowSNF = null;
+    minimumCowRate = null;
+
+    maximumCowFat = null;
+    maximumCowSNF = null;
+    maximumCowRate = null;
+
+    localMilkSaleCow = 0;
+    notifyListeners();
+    print("CowRateChartProvider data cleared.");
   }
   void updateExcelData(List<List<String>> updatedExcelData,int row, int col)async{
     excelData = updatedExcelData.map((row) => List<String>.from(row)).toList();
@@ -125,9 +148,6 @@ class CowRateChartProvider extends ChangeNotifier {
       String filePath = result.files.single.path!;
       Uint8List bytes = File(filePath).readAsBytesSync();
 
-      // Save the file bytes to Hive
-      var box = Hive.box('rate_charts');
-      await box.put('cow_ratechart', bytes); // Store as Uint8List
 
       // Decode Excel
       var excel = Excel.decodeBytes(bytes);
@@ -144,6 +164,8 @@ class CowRateChartProvider extends ChangeNotifier {
           }
         }
       }
+      Admin admin = CustomWidgets.currentAdmin();
+      print('opening cowbox');
       var cowBox =  Hive.box<CowRateData>('cowBox');
       CowRateData cowRateData = cowBox.get('cowRateData_${admin.id}') ?? CowRateData();
       cowRateData.excelData = excelData;
@@ -151,7 +173,7 @@ class CowRateChartProvider extends ChangeNotifier {
       if (searchValue("2.00")) {
         print('row is $row col is $col');
         filePicked = true;
-
+        cowRateData.filePicked = true;
         RateChartInfo rateChartInfo = RateChartInfo(
           note: 'New Rate chart',
           rateChart: excelData,
@@ -161,7 +183,10 @@ class CowRateChartProvider extends ChangeNotifier {
         );
 
         rateChartHistory.add(rateChartInfo);
+        cowRateData.row = row!;
+        cowRateData.col = col!;
       }
+      cowBox.put('cowRateData_${admin.id}', cowRateData);
 
       print("Notified all about picked Excel");
       notifyListeners();

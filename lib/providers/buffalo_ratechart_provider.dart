@@ -8,7 +8,6 @@ import '../model/admin.dart';
 import '../model/buffalo_rate_data.dart';
 import '../model/ratechartinfo.dart';
 import '../widgets/appbar.dart';
-import 'cow_ratechart_provider.dart';
 
 class BuffaloRatechartProvider extends ChangeNotifier {
   List<List<String>> excelData = [];
@@ -64,24 +63,31 @@ class BuffaloRatechartProvider extends ChangeNotifier {
     localMilkSaleBuffalo = rateData.localMilkSaleBuffalo!;
     notifyListeners();
   }
-  void setBuffaloRateData()
-  {
-    BuffaloRateData rateData = BuffaloRateData();
-    rateData.excelData = excelData;
-    rateData.rateChartHistory = rateChartHistory;
-    rateData.filePicked = filePicked;
-    rateData.name = name;
-    rateData.maximumBuffaloFat = maximumBuffaloFat;
-    rateData.maximumBuffaloSNF = maximumBuffaloSNF;
-    rateData.maximumBuffaloRate = maximumBuffaloRate;
-    rateData.minimumBuffaloFat = minimumBuffaloFat;
-    rateData.minimumBuffaloSNF = minimumBuffaloSNF;
-    rateData.minimumBuffaloRate = minimumBuffaloRate;
-    rateData.localMilkSaleBuffalo = localMilkSaleBuffalo;
-}
 
+  void clearAllData() {
+    print("Clearing all BuffaloRatechartProvider data...");
 
+    excelData = [];
+    filePicked = false;
+    rateChartHistory = [];
 
+    row = null;
+    col = null;
+
+    name = "";
+
+    minimumBuffaloFat = null;
+    minimumBuffaloSNF = null;
+    minimumBuffaloRate = null;
+    maximumBuffaloFat = null;
+    maximumBuffaloSNF = null;
+    maximumBuffaloRate = null;
+
+    localMilkSaleBuffalo = 0;
+
+    notifyListeners();
+    print("BuffaloRatechartProvider data cleared.");
+  }
   Future<void> setValues(
       var minimumBuffaloFat,
       double minimumBuffaloSNF,
@@ -90,12 +96,23 @@ class BuffaloRatechartProvider extends ChangeNotifier {
       double maximumBuffaloSNF,
       double maximumBuffaloRate
       )async {
+    Admin admin = CustomWidgets.currentAdmin();
+
     this.minimumBuffaloFat=minimumBuffaloFat;
     this.minimumBuffaloSNF=minimumBuffaloSNF;
     this.minimumBuffaloRate=minimumBuffaloRate;
     this.maximumBuffaloFat=maximumBuffaloFat;
     this.maximumBuffaloSNF=maximumBuffaloSNF;
     this.maximumBuffaloRate=maximumBuffaloRate;
+    var buffaloBox =  Hive.box<BuffaloRateData>('buffaloBox');
+    BuffaloRateData buffaloRateData = buffaloBox.get('buffaloRateData_${admin.id}') ?? BuffaloRateData();
+    buffaloRateData.minimumBuffaloFat=minimumBuffaloFat;
+    buffaloRateData.minimumBuffaloSNF=minimumBuffaloSNF;
+    buffaloRateData.minimumBuffaloRate=minimumBuffaloRate;
+    buffaloRateData.maximumBuffaloFat=maximumBuffaloFat;
+    buffaloRateData.maximumBuffaloSNF=maximumBuffaloSNF;
+    buffaloRateData.maximumBuffaloRate=maximumBuffaloRate;
+    buffaloBox.put('buffaloRateData_${admin.id}', buffaloRateData);
     notifyListeners();
   }
   List<dynamic> getBuffaloValues()
@@ -152,24 +169,22 @@ class BuffaloRatechartProvider extends ChangeNotifier {
           }
         }
       }
-      // notifyListeners();
+       Admin admin = CustomWidgets().currentAdminNonStatic();
+       var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
+       BuffaloRateData buffaloRateData  = buffaloBox.get('buffaloRateData_${admin.id}')??BuffaloRateData();
       if(searchValue("3.00")) {
+        buffaloRateData.excelData = excelData;
         filePicked = true;
+        buffaloRateData.filePicked = true;
         RateChartInfo  rateChartInfo = RateChartInfo(note:  'New Rate chart', rateChart: excelData, row: row!, col: col!,date: DateTime.now().toIso8601String());
         rateChartHistory.add( rateChartInfo);
-        // Admin admin = CustomWidgets().currentAdminNonStatic();
-        // var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
-        //
-        // BuffaloRateData? buffaloRateData  = buffaloBox.get(admin.id!);
-        // buffaloRateData ??= BuffaloRateData();
-        // buffaloRateData.excelData = excelData;
+
         // buffaloRateData.rateChartHistory = rateChartHistory;
-        // buffaloRateData.row = row;
-        // buffaloRateData.col = col;
-        // buffaloRateData.filePicked = true;
-        // buffaloRateData.name = name;
-        // buffaloBox.put(admin.id!,buffaloRateData);
+        buffaloRateData.row = row;
+        buffaloRateData.col = col;
+         buffaloRateData.name = name;
       }
+      buffaloBox.put('buffaloRateData_${admin.id}', buffaloRateData);
       notifyListeners();
     }
   }
