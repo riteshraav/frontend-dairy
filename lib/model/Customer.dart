@@ -4,7 +4,6 @@ part '../hive/customer.g.dart';
 @HiveType(typeId: 1)
 class Customer {
 
-
   @HiveField(0)
   String? code;
 

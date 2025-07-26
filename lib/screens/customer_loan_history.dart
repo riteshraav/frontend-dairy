@@ -169,90 +169,92 @@ class _CustomerLoanHistoryState extends State<CustomerLoanHistory> {
       }, icon: Icon(Icons.add))]),
       backgroundColor: Colors.blue[50],
       body:
-      isLoading?
-      Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 5,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue), // change color
-        ),
-      )
-          :
-      SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                keyboardType: TextInputType.phone,
-                controller: _searchController,
-                decoration: InputDecoration(
-                  fillColor: Colors.white,
-                  filled: true,
-                  suffixIcon: (_searchController.text !="")?IconButton(onPressed: (){
-                    _searchController.clear();
-                  }, icon: Icon(Icons.clear)):null,
-                  labelText: 'Enter Customer Code',
-                  border: const OutlineInputBorder(),
-
-                ),
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
+      Stack(
+        children:[ SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: DataTable(
-                  columnSpacing: 8,
-                  headingRowHeight: 45,
-                  border: TableBorder.all(),
-                  headingRowColor: WidgetStateProperty.all(Color(0xFF24A1DE)),
-                  columns: [
-                    DataColumn(label: Text("Status",style: TextStyle(color: Colors.white),)),
+                child: TextField(
+                  keyboardType: TextInputType.phone,
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    suffixIcon: (_searchController.text !="")?IconButton(onPressed: (){
+                      _searchController.clear();
+                    }, icon: Icon(Icons.clear)):null,
+                    labelText: 'Enter Customer Code',
+                    border: const OutlineInputBorder(),
 
-                    //DataColumn(label: Text("Date",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Code",style: TextStyle(color: Colors.white),)),
-                    //DataColumn(label: Text("Name",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Amt",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Rate",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Interest",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Pay",style: TextStyle(color: Colors.white),)),
-                    DataColumn(label: Text("Delete",style: TextStyle(color: Colors.white),)),
-                  ],
-                  rows: List.generate(
-                    store.length,
-                        (index) {
-                      final entry = store[index];
-                      return DataRow(
-                        color: WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) {
-                            return Colors.white; // white background
-                          },
-                        ),
-                        cells: [
-                          // DataCell(Text(dateController.text)),
-                          DataCell(Row(
-                            children: [
-                              Text(entry.loanAmount == 0?"NIL":"PENDING",style: TextStyle(color: entry.loanAmount == 0?Colors.green:Colors.red),),
-                              IconButton(icon: Icon(entry.loanAmount == 0? Icons.check_box:Icons.close) , color:entry.loanAmount == 0?Colors.green :Colors.red , onPressed: () => _deleteData(entry)),
-                            ],
-                          )),
-                          DataCell(Text(entry.customerId)),
-                          //DataCell(Text(selectedCustomer.name!)),
-                          DataCell(Text(entry.loanAmount.toString())),
-                          DataCell(Text(entry.interestRate.toString())),
-                          DataCell(Text((calculateInterest(entry)).toStringAsFixed(2))),
-                          DataCell(Text(entry.modeOfPayback)),
-                          DataCell(IconButton(icon: Icon(Icons.delete, color: Colors.blue,), onPressed: () => _deleteData(entry))),
-                        ],
-
-                      );
-                    },
                   ),
                 ),
               ),
-            ),
-          ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: DataTable(
+                    columnSpacing: 8,
+                    headingRowHeight: 45,
+                    border: TableBorder.all(),
+                    headingRowColor: WidgetStateProperty.all(Color(0xFF24A1DE)),
+                    columns: [
+                      DataColumn(label: Text("Status",style: TextStyle(color: Colors.white),)),
+
+                      //DataColumn(label: Text("Date",style: TextStyle(color: Colors.white),)),
+                      DataColumn(label: Text("Code",style: TextStyle(color: Colors.white),)),
+                      //DataColumn(label: Text("Name",style: TextStyle(color: Colors.white),)),
+                      DataColumn(label: Text("Amt",style: TextStyle(color: Colors.white),)),
+                      DataColumn(label: Text("Rate",style: TextStyle(color: Colors.white),)),
+                      DataColumn(label: Text("Interest",style: TextStyle(color: Colors.white),)),
+                      DataColumn(label: Text("Pay",style: TextStyle(color: Colors.white),)),
+                      DataColumn(label: Text("Delete",style: TextStyle(color: Colors.white),)),
+                    ],
+                    rows: List.generate(
+                      store.length,
+                          (index) {
+                        final entry = store[index];
+                        return DataRow(
+                          color: WidgetStateProperty.resolveWith<Color?>(
+                                (Set<WidgetState> states) {
+                              return Colors.white; // white background
+                            },
+                          ),
+                          cells: [
+                            // DataCell(Text(dateController.text)),
+                            DataCell(Row(
+                              children: [
+                                Text(entry.loanAmount == 0?"NIL":"PENDING",style: TextStyle(color: entry.loanAmount == 0?Colors.green:Colors.red),),
+                                IconButton(icon: Icon(entry.loanAmount == 0? Icons.check_box:Icons.close) , color:entry.loanAmount == 0?Colors.green :Colors.red , onPressed: () => _deleteData(entry)),
+                              ],
+                            )),
+                            DataCell(Text(entry.customerId)),
+                            //DataCell(Text(selectedCustomer.name!)),
+                            DataCell(Text(entry.loanAmount.toString())),
+                            DataCell(Text(entry.interestRate.toString())),
+                            DataCell(Text((calculateInterest(entry)).toStringAsFixed(2))),
+                            DataCell(Text(entry.modeOfPayback)),
+                            DataCell(IconButton(icon: Icon(Icons.delete, color: Colors.blue,), onPressed: () => _deleteData(entry))),
+                          ],
+
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ]
       ),
     );
   }

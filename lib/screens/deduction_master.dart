@@ -66,6 +66,9 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
   Admin admin = CustomWidgets.currentAdmin();
   CustomerBalance? currentCustomerBalance =
       CustomerBalance(adminId: "dummy", customerId: "dummy");
+
+
+
   void _searchDeductionInfo() async {
     print("[SearchDeduction] Start");
 
@@ -205,6 +208,7 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
     });
 
     print("[SearchDeduction] UI updated with final values");
+    print('membrcontroller ${nameController.text}');
   }
 
   @override
@@ -517,332 +521,345 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
     return Scaffold(
       backgroundColor: Colors.blue[50],
       appBar: CustomWidgets.buildAppBar("Deduction Master"),
-      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  width: 112,
-                  child: Autocomplete<Customer>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      return customerList
-                          .where((supplier) =>
-                              supplier.code!.contains(textEditingValue.text))
-                          .toList();
-                    },
-                    displayStringForOption: (Customer option) =>
-                        "${option.code!} - ${option.name!}",
-                    onSelected: (Customer selection) {
-                      selectedCustomer = selection;
+      body: Stack(
+        children: [
 
-                      memberCodeController.text = selection.code!;
-                      nameController.text = selection.name!;
-                      FocusScope.of(context)
-                          .requestFocus(saveFocusNode); // Hide suggestions
-                    },
-                    fieldViewBuilder:
-                        (context, controller, focusNode, onEditingComplete) {
-                      memberCodeController = controller;
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          labelText: "Code",
-                          border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.search),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Autocomplete<Customer>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      return customerList
-                          .where((supplier) => supplier.name!
-                              .toLowerCase()
-                              .contains(textEditingValue.text.toLowerCase()))
-                          .toList();
-                    },
-                    displayStringForOption: (Customer option) =>
-                        "${option.code!} - ${option.name!}",
-                    onSelected: (Customer selection) {
-                      selectedCustomer = selection;
-                      memberCodeController.text = selection.code!;
-                      nameController.text = selection.name!;
-                      FocusScope.of(context)
-                          .requestFocus(saveFocusNode); // Hide suggestions
-                    },
-                    fieldViewBuilder:
-                        (context, controller, focusNode, onEditingComplete) {
-                      nameController = controller;
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          labelText: "Customer Name",
-                          border: OutlineInputBorder(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: fromDateController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: "From",
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-                      filled: true,
-                      fillColor: Colors.white,
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.calendar_month),
-                        onPressed: () =>
-                            _selectDate(context, fromDateController, "from"),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 20),
-                Expanded(
-                  child: TextField(
-                    readOnly: true,
-                    controller: toDateController,
-                    decoration: InputDecoration(
-                      labelText: "To",
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-                      filled: true,
-                      fillColor: Colors.white,
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.calendar_month),
-                        onPressed: () =>
-                            _selectDate(context, toDateController, "to"),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CustomWidgets.customButton(
-                    onPressed: _searchDeductionInfo,
-                    focusNode: saveFocusNode,
-                    text: "search")
-              ],
-            ),
-            SizedBox(height: 20),
-            TextField(
-              readOnly: true,
-              controller: milkTotalBillController,
-              decoration: InputDecoration(
-                labelText: "Milk Total Bill (₹)",
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-            SizedBox(height: 20),
-            Text("Deduction List",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Form(
-              key: _formKey,
-              child: Table(
-                border: TableBorder.all(),
+          SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  TableRow(children: [
-                    tableCell("Deduction Name", true),
-                    tableCell("Balance", true),
-                    tableCell("Deduction", true),
-                  ]),
-                  TableRow(
-                    children: [
-                      tableCell("Cattle Feed", false),
-                      tableInputField(
-                        controller: cattleFeedBalanceController,
-                        isEditable: false,
-                      ),
-                      tableInputField(
-                          controller: cattleFeedDeductionController,
-                          isEditable: true,
-                          validator: cattleFeedDeductionValidator),
-                    ],
+                  SizedBox(
+                    width: 112,
+                    child: Autocomplete<Customer>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        return customerList
+                            .where((supplier) =>
+                            supplier.code!.contains(textEditingValue.text))
+                            .toList();
+                      },
+                      displayStringForOption: (Customer option) =>
+                      "${option.code!} - ${option.name!}",
+                      onSelected: (Customer selection) {
+                        selectedCustomer = selection;
+
+                        memberCodeController.text = selection.code!;
+                        nameController.text = selection.name!;
+                        FocusScope.of(context)
+                            .requestFocus(saveFocusNode); // Hide suggestions
+                      },
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onEditingComplete) {
+                        memberCodeController = controller;
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            labelText: "Code",
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.search),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  TableRow(
-                    children: [
-                      tableCell("Advance", false),
-                      tableInputField(
-                          controller: advanceBalanceController,
-                          isEditable: false),
-                      tableInputField(
-                          controller: advanceDeductionController,
-                          isEditable: true,
-                          validator: advanceDeductionValidator),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      tableCell("Milk Credit", false),
-                      tableInputField(
-                        controller: creditMilkBalanceController,
-                        isEditable: false,
-                      ),
-                      tableInputField(
-                          controller: creditMilkDeductionController,
-                          isEditable: true,
-                          validator: milkCreditDeductionValidator),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      tableCell("Loan", false),
-                      tableInputField(
-                        controller: loanBalanceController,
-                        isEditable: false,
-                      ),
-                      tableInputField(
-                          controller: loanDeductionController,
-                          isEditable: true,
-                          validator: loanDeductionValidator),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      tableCell("Other Expenses", false),
-                      tableInputField(
-                        controller: otherExpenseBalanceController,
-                        isEditable: false,
-                      ),
-                      tableInputField(
-                          controller: otherExpenseDeductionController,
-                          isEditable: true,
-                          validator: otherExpenseDeductionValidator),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      tableCell("Doctor Visit Fees", false),
-                      tableInputField(
-                        controller: doctorVisitFeesBalanceController,
-                        isEditable: false,
-                      ),
-                      tableInputField(
-                          controller: doctorVisitFeesDeductionController,
-                          isEditable: true,
-                          validator: doctorVisitFeesDeductionValidator),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      tableCell("Expense", false),
-                      tableInputField(
-                        controller: expenseBalanceController,
-                        isEditable: false,
-                      ),
-                      tableInputField(
-                          controller: expenseDeductionController,
-                          isEditable: true,
-                          validator: expenseDeductionValidator),
-                    ],
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Autocomplete<Customer>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        return customerList
+                            .where((supplier) => supplier.name!
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase()))
+                            .toList();
+                      },
+                      displayStringForOption: (Customer option) =>
+                      "${option.code!} - ${option.name!}",
+                      onSelected: (Customer selection) {
+                        selectedCustomer = selection;
+                        memberCodeController.text = selection.code!;
+                        nameController.text = selection.name!;
+                        FocusScope.of(context)
+                            .requestFocus(saveFocusNode); // Hide suggestions
+                      },
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onEditingComplete) {
+                        nameController = controller;
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            labelText: "Customer Name",
+                            border: OutlineInputBorder(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
                     child: TextField(
-                        controller: totalBalController,
-                        decoration: InputDecoration(
-                            labelText: "Total Balance",
-                            labelStyle: TextStyle(color: Colors.black),
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 2, horizontal: 10),
-                            filled: true,
-                            fillColor: Colors.white),
-                        readOnly: true)),
-                SizedBox(width: 10),
-                Expanded(
-                    child: TextField(
-                        controller: dedAmountController,
-                        decoration: InputDecoration(
-                          labelText: "Deduction Amount",
-                          labelStyle: TextStyle(
-                            color: Colors.black,
-                          ),
-                          border: OutlineInputBorder(),
-                          contentPadding:
-                              EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-                          filled: true,
-                          fillColor: Colors.white,
+                      controller: fromDateController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "From",
+                        border: OutlineInputBorder(),
+                        contentPadding:
+                        EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                        filled: true,
+                        fillColor: Colors.white,
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.calendar_month),
+                          onPressed: () =>
+                              _selectDate(context, fromDateController, "from"),
                         ),
-                        readOnly: true)),
-              ],
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: netPayController,
-                    decoration: InputDecoration(
-                      labelText: "Net Pay (₹)",
-                      labelStyle: TextStyle(color: Colors.black),
-                      border: OutlineInputBorder(),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 2, horizontal: 10),
-                    ),
-                    readOnly: true,
-                  ),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: SizedBox(
-                    width: 50,
-                    child: ElevatedButton(
-                      onPressed: saveChanges,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF24A1DE)),
-                      child: const Text('Save',
-                          style: TextStyle(color: Colors.white)),
+                      ),
                     ),
                   ),
-                )
-              ],
-            )
-          ],
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: TextField(
+                      readOnly: true,
+                      controller: toDateController,
+                      decoration: InputDecoration(
+                        labelText: "To",
+                        border: OutlineInputBorder(),
+                        contentPadding:
+                        EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                        filled: true,
+                        fillColor: Colors.white,
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.calendar_month),
+                          onPressed: () =>
+                              _selectDate(context, toDateController, "to"),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomWidgets.customButton(
+                      onPressed: _searchDeductionInfo,
+                      focusNode: saveFocusNode,
+                      text: "search")
+                ],
+              ),
+              SizedBox(height: 20),
+              TextField(
+                readOnly: true,
+                controller: milkTotalBillController,
+                decoration: InputDecoration(
+                  labelText: "Milk Total Bill (₹)",
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                  EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              SizedBox(height: 20),
+              Text("Deduction List",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Form(
+                key: _formKey,
+                child: Table(
+                  border: TableBorder.all(),
+                  children: [
+                    TableRow(children: [
+                      tableCell("Deduction Name", true),
+                      tableCell("Balance", true),
+                      tableCell("Deduction", true),
+                    ]),
+                    TableRow(
+                      children: [
+                        tableCell("Cattle Feed", false),
+                        tableInputField(
+                          controller: cattleFeedBalanceController,
+                          isEditable: false,
+                        ),
+                        tableInputField(
+                            controller: cattleFeedDeductionController,
+                            isEditable: true,
+                            validator: cattleFeedDeductionValidator),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        tableCell("Advance", false),
+                        tableInputField(
+                            controller: advanceBalanceController,
+                            isEditable: false),
+                        tableInputField(
+                            controller: advanceDeductionController,
+                            isEditable: true,
+                            validator: advanceDeductionValidator),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        tableCell("Milk Credit", false),
+                        tableInputField(
+                          controller: creditMilkBalanceController,
+                          isEditable: false,
+                        ),
+                        tableInputField(
+                            controller: creditMilkDeductionController,
+                            isEditable: true,
+                            validator: milkCreditDeductionValidator),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        tableCell("Loan", false),
+                        tableInputField(
+                          controller: loanBalanceController,
+                          isEditable: false,
+                        ),
+                        tableInputField(
+                            controller: loanDeductionController,
+                            isEditable: true,
+                            validator: loanDeductionValidator),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        tableCell("Other Expenses", false),
+                        tableInputField(
+                          controller: otherExpenseBalanceController,
+                          isEditable: false,
+                        ),
+                        tableInputField(
+                            controller: otherExpenseDeductionController,
+                            isEditable: true,
+                            validator: otherExpenseDeductionValidator),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        tableCell("Doctor Visit Fees", false),
+                        tableInputField(
+                          controller: doctorVisitFeesBalanceController,
+                          isEditable: false,
+                        ),
+                        tableInputField(
+                            controller: doctorVisitFeesDeductionController,
+                            isEditable: true,
+                            validator: doctorVisitFeesDeductionValidator),
+                      ],
+                    ),
+                    TableRow(
+                      children: [
+                        tableCell("Expense", false),
+                        tableInputField(
+                          controller: expenseBalanceController,
+                          isEditable: false,
+                        ),
+                        tableInputField(
+                            controller: expenseDeductionController,
+                            isEditable: true,
+                            validator: expenseDeductionValidator),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                      child: TextField(
+                          controller: totalBalController,
+                          decoration: InputDecoration(
+                              labelText: "Total Balance",
+                              labelStyle: TextStyle(color: Colors.black),
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 2, horizontal: 10),
+                              filled: true,
+                              fillColor: Colors.white),
+                          readOnly: true)),
+                  SizedBox(width: 10),
+                  Expanded(
+                      child: TextField(
+                          controller: dedAmountController,
+                          decoration: InputDecoration(
+                            labelText: "Deduction Amount",
+                            labelStyle: TextStyle(
+                              color: Colors.black,
+                            ),
+                            border: OutlineInputBorder(),
+                            contentPadding:
+                            EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                          readOnly: true)),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: netPayController,
+                      decoration: InputDecoration(
+                        labelText: "Net Pay (₹)",
+                        labelStyle: TextStyle(color: Colors.black),
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding:
+                        EdgeInsets.symmetric(vertical: 2, horizontal: 10),
+                      ),
+                      readOnly: true,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: SizedBox(
+                      width: 50,
+                      child: ElevatedButton(
+                        onPressed: saveChanges,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF24A1DE)),
+                        child: const Text('Save',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
         ),
-      ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ],
+      )
+
     );
   }
 

@@ -46,8 +46,7 @@ class CowRateData extends HiveObject {
   int col = 0;
   @HiveField(14)
   double? localMilkSaleBuffalo = 0;
-
-
+  @HiveField(15)
   CowRateData({
     this.rateChartHistory,
     this.name = "",

@@ -24,7 +24,22 @@ class CowRateChartProvider extends ChangeNotifier {
   double? maximumCowSNF;
   double? maximumCowRate;
   double localMilkSaleCow=0;
+  double _morningCowQuantity = 0;
 
+  double get morningCowQuantity => _morningCowQuantity;
+
+  set morningCowQuantity(double value) {
+    _morningCowQuantity = value;
+    Admin admin = CustomWidgets.currentAdmin();
+    print('opening cowbox');
+    var cowBox =  Hive.box<CowRateData>('cowBox');
+    CowRateData cowRateData = cowBox.get('cowRateData_${admin.id}') ?? CowRateData();
+    cowRateData.morningQuantity =value;
+    cowBox.put('cowRateData_${admin.id}', cowRateData);
+    notifyListeners();
+  }
+
+  double _eveningCowQuantity = 0;
   // Constructor
   CowRateChartProvider({
     this.row,
@@ -90,7 +105,10 @@ class CowRateChartProvider extends ChangeNotifier {
     minimumCowSNF = cowRateData.minimumCowSNF;
     minimumCowRate = cowRateData.minimumCowRate;
     localMilkSaleCow = cowRateData.morningQuantity;
-
+    row = cowRateData.row;
+    col = cowRateData.col;
+    morningCowQuantity = cowRateData.morningQuantity;
+    eveningCowQuantity = cowRateData.eveningQuantity;
     notifyListeners();
 
   }
@@ -210,23 +228,44 @@ class CowRateChartProvider extends ChangeNotifier {
       print("2.00 not found in cow rate chart");
       return false;
   }
-  double findRate(double fat,double snf){
-    if((minimumCowFat != null && minimumCowSNF != null) && fat < minimumCowFat! || snf < minimumCowSNF!)
-      {
-        return minimumCowRate!;
-      }
-    else if( (maximumCowFat != null && maximumCowSNF != null ) && fat > maximumCowFat! || snf > maximumCowSNF!)
-      {
-        return maximumCowRate!;
-      }
-    else{
-      print("row = $row fat = ${fat}  col = ${col}  snf = ${snf}");
-      int excelRow = (row! + ((fat - 2)*10).round());
-      int excelCol = ((1+col!+ (snf-7.5)*10).round());
-      print("excel row $excelRow  excel col $excelCol" );
+  double findRate(double fat, double snf) {
+    // Case 1: Minimum bounds check (only if both minimum values are provided)
+    if ((minimumCowFat != null && minimumCowSNF != null) &&
+        (fat < minimumCowFat! || snf < minimumCowSNF!)) {
+      return minimumCowRate!;
+    }
+
+    // Case 2: Maximum bounds check (only if both maximum values are provided)
+    else if ((maximumCowFat != null && maximumCowSNF != null) &&
+        (fat > maximumCowFat! || snf > maximumCowSNF!)) {
+      return maximumCowRate!;
+    }
+
+    // Case 3: Default calculation
+    else {
+      print("row = $row fat = $fat  col = $col  snf = $snf");
+
+      int excelRow = row! + ((fat - 2) * 10).round();
+      int excelCol = 1 + col! + ((snf - 7.5) * 10).round();
+
+      print("excel row $excelRow  excel col $excelCol");
       print("snf is ${excelData[excelRow][col!]}");
       print("fat is ${excelData[row!][excelCol]}");
+
       return double.parse(excelData[excelRow][excelCol]);
     }
+  }
+
+  double get eveningCowQuantity => _eveningCowQuantity;
+
+  set eveningCowQuantity(double value) {
+    _eveningCowQuantity = value;
+    Admin admin = CustomWidgets.currentAdmin();
+    print('opening cowbox');
+    var cowBox =  Hive.box<CowRateData>('cowBox');
+    CowRateData cowRateData = cowBox.get('cowRateData_${admin.id}') ?? CowRateData();
+    cowRateData.eveningQuantity =value;
+    cowBox.put('cowRateData_${admin.id}', cowRateData);
+    notifyListeners();
   }
 }

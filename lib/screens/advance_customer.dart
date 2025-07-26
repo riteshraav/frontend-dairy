@@ -229,164 +229,174 @@ class _AdvanceScreenState extends State<AdvanceScreen> {
         Navigator.pop(context,widget.advanceList)
       }, icon: Icon(Icons.arrow_back))),
 
-      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextField(controller: dateController, readOnly: true, decoration: InputDecoration(labelText: "Date",
-                  fillColor: Colors.white,
-                  filled: true,
-                  border: OutlineInputBorder())),
-              SizedBox(height: 15),
-              Row(
-                children: [
-                  SizedBox(
-                    width: 112,
-                    child: Autocomplete<Customer>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        return customerList
-                            .where((supplier) => supplier.code!.contains(textEditingValue.text))
-                            .toList();
-                      },
-                      displayStringForOption: (Customer option) => "${option.code!} - ${option.name!}",
-                      onSelected: (Customer selection) {
-                        _clearFields();
+      body: Stack(
+        children:[ SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(controller: dateController, readOnly: true, decoration: InputDecoration(labelText: "Date",
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: OutlineInputBorder())),
+                SizedBox(height: 15),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 112,
+                      child: Autocomplete<Customer>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          return customerList
+                              .where((supplier) => supplier.code!.contains(textEditingValue.text))
+                              .toList();
+                        },
+                        displayStringForOption: (Customer option) => "${option.code!} - ${option.name!}",
+                        onSelected: (Customer selection) {
+                          _clearFields();
 
-                        AdvanceEntry? entryToBeDeleted;
+                          AdvanceEntry? entryToBeDeleted;
 
-                        try {
-                          entryToBeDeleted = widget.advanceList.firstWhere(
-                                (entry) => selection.code == entry.code,
+                          try {
+                            entryToBeDeleted = widget.advanceList.firstWhere(
+                                  (entry) => selection.code == entry.code,
+                            );
+                          } catch (e) {
+                            entryToBeDeleted = null;
+                          }
+
+
+                          if (entryToBeDeleted != null && entryToBeDeleted.advanceAmount != 0.0) {
+
+                            print("entry is duplicate and must delete it ${entryToBeDeleted.advanceAmount }/////////////////////");
+                            handleDuplicateEntry(entryToBeDeleted);
+                            return;
+                          }
+                          print("entry is not duplicate");
+
+
+                          codeController.text = selection.code!;
+                          nameController.text = selection.name!;
+                          FocusScope.of(context).unfocus(); // Hide suggestions
+                        },
+                        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                          codeController = controller;
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              fillColor: Colors.white,
+                              filled: true,
+                              labelText: "Code",
+                              border: OutlineInputBorder(),
+                              suffixIcon: Icon(Icons.search),
+                            ),
                           );
-                        } catch (e) {
-                          entryToBeDeleted = null;
-                        }
-
-
-                        if (entryToBeDeleted != null && entryToBeDeleted.advanceAmount != 0.0) {
-
-                          print("entry is duplicate and must delete it ${entryToBeDeleted.advanceAmount }/////////////////////");
-                          handleDuplicateEntry(entryToBeDeleted);
-                          return;
-                        }
-                        print("entry is not duplicate");
-
-
-                        codeController.text = selection.code!;
-                        nameController.text = selection.name!;
-                        FocusScope.of(context).unfocus(); // Hide suggestions
-                      },
-                      fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                        codeController = controller;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: InputDecoration(
-                            fillColor: Colors.white,
-                            filled: true,
-                            labelText: "Code",
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.search),
-                          ),
-                        );
-                      },
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Autocomplete<Customer>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        return customerList
-                            .where((supplier) => supplier.name!.toLowerCase().contains(textEditingValue.text.toLowerCase()))
-                            .toList();
-                      },
-                      displayStringForOption: (Customer option) => "${option.code!} - ${option.name!}",
-                      onSelected: (Customer selection) {
-                        _clearFields();
-                        AdvanceEntry? entryToBeDeleted;
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Autocomplete<Customer>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          return customerList
+                              .where((supplier) => supplier.name!.toLowerCase().contains(textEditingValue.text.toLowerCase()))
+                              .toList();
+                        },
+                        displayStringForOption: (Customer option) => "${option.code!} - ${option.name!}",
+                        onSelected: (Customer selection) {
+                          _clearFields();
+                          AdvanceEntry? entryToBeDeleted;
 
-                        try {
-                          entryToBeDeleted = widget.advanceList.firstWhere(
-                                (entry) => selection.code == entry.code,
+                          try {
+                            entryToBeDeleted = widget.advanceList.firstWhere(
+                                  (entry) => selection.code == entry.code,
+                            );
+                          } catch (e) {
+                            entryToBeDeleted = null;
+                          }
+
+                          if (entryToBeDeleted != null   && entryToBeDeleted.advanceAmount != 0.0) {
+
+                            print("entry is duplicate");
+                            handleDuplicateEntry(entryToBeDeleted);
+                            return;
+                          }
+                          print("entry is not duplicate");
+                          codeController.text = selection.code!;
+                          nameController.text = selection.name!;
+                          FocusScope.of(context).unfocus(); // Hide suggestions
+                        },
+                        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                          nameController = controller;
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              fillColor: Colors.white,
+                              filled: true,
+                              labelText: "Customer Name",
+                              border: OutlineInputBorder(),
+                            ),
                           );
-                        } catch (e) {
-                          entryToBeDeleted = null;
-                        }
-
-                        if (entryToBeDeleted != null   && entryToBeDeleted.advanceAmount != 0.0) {
-
-                          print("entry is duplicate");
-                          handleDuplicateEntry(entryToBeDeleted);
-                          return;
-                        }
-                        print("entry is not duplicate");
-                        codeController.text = selection.code!;
-                        nameController.text = selection.name!;
-                        FocusScope.of(context).unfocus(); // Hide suggestions
-                      },
-                      fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                        nameController = controller;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: InputDecoration(
-                            fillColor: Colors.white,
-                            filled: true,
-                            labelText: "Customer Name",
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 15),
-              TextField(controller: advanceAmountController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: "Advance Amount",
-                      fillColor: Colors.white,
-                      filled: true,border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),)),
-              SizedBox(height: 15),
-              TextField(controller: noteController, decoration: InputDecoration(labelText: "Note",
-                  fillColor: Colors.white,
-                  filled: true,border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),)),
-              SizedBox(height: 15),
-              TextField(controller: interestRateController, keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: "Interest Rate",
-                      fillColor: Colors.white,
-                      filled: true,border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),)),
-              SizedBox(height: 15),
-
-              DropdownButtonFormField<String>(
-                value: selectedPaymentMethod,
-                decoration: InputDecoration(labelText: "Payment Method",
+                  ],
+                ),
+                SizedBox(height: 15),
+                TextField(controller: advanceAmountController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: "Advance Amount",
+                        fillColor: Colors.white,
+                        filled: true,border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),)),
+                SizedBox(height: 15),
+                TextField(controller: noteController, decoration: InputDecoration(labelText: "Note",
                     fillColor: Colors.white,
                     filled: true,border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),),
-                items: ["Credit", "Cash"].map((method) {
-                  return DropdownMenuItem(value: method, child: Text(method));
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedPaymentMethod = value!;
-                  });
-                },
-              ),
+                contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),)),
+                SizedBox(height: 15),
+                TextField(controller: interestRateController, keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: "Interest Rate",
+                        fillColor: Colors.white,
+                        filled: true,border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),)),
+                SizedBox(height: 15),
 
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _saveData,
-                child: Text(isEditing ? "Update" : "Save",style: TextStyle(color: Colors.white),),
-                style: CustomWidgets.elevated(),
-              ),
-            ],
+                DropdownButtonFormField<String>(
+                  value: selectedPaymentMethod,
+                  decoration: InputDecoration(labelText: "Payment Method",
+                      fillColor: Colors.white,
+                      filled: true,border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),),
+                  items: ["Credit", "Cash"].map((method) {
+                    return DropdownMenuItem(value: method, child: Text(method));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedPaymentMethod = value!;
+                    });
+                  },
+                ),
+
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _saveData,
+                  child: Text(isEditing ? "Update" : "Save",style: TextStyle(color: Colors.white),),
+                  style: CustomWidgets.elevated(),
+                ),
+              ],
+            ),
           ),
         ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ]
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
+import '../main.dart';
 import '../model/Customer.dart';
 import '../model/admin.dart';
 import '../model/milk_collection.dart';
@@ -20,7 +21,6 @@ import 'auth_screens/login_screen.dart';
 import 'drawer_screens/drawer_screen.dart';
 
 class MilkCollectionPage extends StatefulWidget {
-
   final Admin admin = CustomWidgets.currentAdmin();
   // List<Customer> customerList;
   MilkCollectionPage({super.key});
@@ -44,6 +44,10 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
   final TextEditingController _ctotalValueController = TextEditingController();
   TextEditingController codeController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+  double morningBuffaloQuantity = 0;
+  double morningCowQuantity = 0 ;
+  double eveningBuffaloQuantity = 0 ;
+  double eveningCowQuantity = 0;
   Customer selectedCustomer = Customer(buffalo: true,
       cow: true,
       code: "",
@@ -78,6 +82,10 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
   void initState() {
     // TODO: implement initState
     super.initState();
+     // morningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context).morningBuffaloQuantity ?? 0;
+     // morningCowQuantity =Provider.of<CowRateChartProvider>(context).morningCowQuantity;
+     // eveningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context).eveningBuffaloQuantity;
+     // eveningCowQuantity = Provider.of<CowRateChartProvider>(context).eveningCowQuantity;
     customerList = customerBox.get('customers')??[];
     _tabController = TabController(length: 2, vsync: this);
     buffaloFocusNode.addListener(() {
@@ -203,27 +211,7 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
     else if (status != "Unsuccessful") {
       milkCollection.id = status;
       todaysCollection.add(milkCollection);
-      if(DateTime.now().hour <= 14)
-      {
-        if(milkCollection.milkType == "buffalo")
-        {
-          Provider.of<QuantityProvider>(context, listen: false).updateMorningBuffaloQuantity(milkCollection.quantity!);
-        }
-        else{
-          Provider.of<QuantityProvider>(context, listen: false).updateMorningCowQuantity(milkCollection.quantity!);
-        }
 
-      }
-      else {
-        if(milkCollection.milkType == "buffalo")
-        {
-          Provider.of<QuantityProvider>(context, listen: false).updateEveningBuffaloQuantity(milkCollection.quantity!);
-        }
-        else{
-          Provider.of<QuantityProvider>(context, listen: false).updateEveningCowQuantity(milkCollection.quantity!);
-
-        }
-      }
       Fluttertoast.showToast(msg: "Info saved", timeInSecForIosWeb: 2);
       if(selectedCustomer.buffalo! && selectedCustomer.cow! && _cquantityController.text == "")
       {
@@ -254,8 +242,30 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
     else {
       Fluttertoast.showToast(msg: "Info not saved");
     }
+    setState(() {
+      if(milkCollection.milkType == 'buffalo')
+      {
+        if(milkCollection.time == 'Morning') {
+          Provider.of<BuffaloRatechartProvider>(context, listen: false).morningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context, listen: false).morningBuffaloQuantity  + milkCollection.quantity!  ;
+        }
+        else{
+          Provider.of<BuffaloRatechartProvider>(context, listen: false).eveningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context, listen: false).eveningBuffaloQuantity  + milkCollection.quantity!  ;
+
+        }
+      }
+      else{
+        if(milkCollection.time == 'Morning') {
+          Provider.of<CowRateChartProvider>(context, listen: false).morningCowQuantity = Provider.of<CowRateChartProvider>(context, listen: false).morningCowQuantity  + milkCollection.quantity!  ;
+        }
+        else{
+          Provider.of<CowRateChartProvider>(context, listen: false).eveningCowQuantity = Provider.of<CowRateChartProvider>(context, listen: false).eveningCowQuantity  + milkCollection.quantity!  ;
+
+        }
+      }
+    });
   }
   void _updateRate(String type) {
+    print('update rate called');
     if (_formKey.currentState!.validate()) {
       if (Provider
           .of<CowRateChartProvider>(context, listen: false)
@@ -273,6 +283,7 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
             rate = Provider.of<CowRateChartProvider>(context, listen: false)
                 .findRate(fatDouble, snfDouble);
           } else {
+            print('findrate in buffalo');
             rate = Provider.of<BuffaloRatechartProvider>(context, listen: false)
                 .findRate(fatDouble, snfDouble);
           }
@@ -302,6 +313,7 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
           });
         }
       } else {
+        print('rate chart is not uploaded');
         Fluttertoast.showToast(
             msg: "Rate chart is not uploaded for $type to find rate",
             timeInSecForIosWeb: 2);
@@ -322,10 +334,10 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
   }
   @override
   Widget build(BuildContext context)  {
-    double morningBuffaloQuantity = Provider.of<QuantityProvider>(context).morningBuffaloQuantity;
-    double morningCowQuantity =Provider.of<QuantityProvider>(context).morningCowQuantity;
-    double eveningBuffaloQuantity = Provider.of<QuantityProvider>(context).eveningBuffaloQuantity;
-    double eveningCowQuantity = Provider.of<QuantityProvider>(context).eveningCowQuantity;
+    morningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context).morningBuffaloQuantity ?? 0;
+    morningCowQuantity =Provider.of<CowRateChartProvider>(context).morningCowQuantity;
+    eveningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context).eveningBuffaloQuantity;
+    eveningCowQuantity = Provider.of<CowRateChartProvider>(context).eveningCowQuantity;
     return Scaffold(
       appBar: CustomWidgets.buildAppBar("Collection", [
         Padding(
@@ -511,7 +523,7 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TodaysCollectionScreen(todaysCollection,DateTime.now())),
+                            MaterialPageRoute(builder: (context) => TodaysCollectionScreen()),
                           );
                         },
                         style: CustomWidgets.elevated(),

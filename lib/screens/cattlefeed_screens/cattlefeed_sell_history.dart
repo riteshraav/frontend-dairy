@@ -161,55 +161,63 @@ class _CattleFeedSellHistoryState extends State<CattleFeedSellHistory> {
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-                  child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: DataTable(
-                    columnSpacing: 8,
-                    headingRowHeight: 45,
-                    border: TableBorder.all(),
-                    headingRowColor: WidgetStateProperty.all(const Color(0xFF24A1DE)),
-                    columns: const [
-                      DataColumn(label: Text("Date", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Code", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Feed", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Qty", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Amount", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Payment", style: TextStyle(color: Colors.white))),
-                      DataColumn(label: Text("Delete", style: TextStyle(color: Colors.white))),
-                    ],
-                    rows: _filteredList.map((sell) {
-                      return DataRow(
-                        color: WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) => Colors.white,
-                        ),
-                        cells: [
-                          DataCell(Text(DateFormat('dd/MM/yy').format(DateTime.parse(sell.date!)))),
-                          DataCell(
-                            Text(sell.customerId ?? ""),
+            child: Stack(
+              children:[ SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DataTable(
+                      columnSpacing: 8,
+                      headingRowHeight: 45,
+                      border: TableBorder.all(),
+                      headingRowColor: WidgetStateProperty.all(const Color(0xFF24A1DE)),
+                      columns: const [
+                        DataColumn(label: Text("Date", style: TextStyle(color: Colors.white))),
+                        DataColumn(label: Text("Code", style: TextStyle(color: Colors.white))),
+                        DataColumn(label: Text("Feed", style: TextStyle(color: Colors.white))),
+                        DataColumn(label: Text("Qty", style: TextStyle(color: Colors.white))),
+                        DataColumn(label: Text("Amount", style: TextStyle(color: Colors.white))),
+                        DataColumn(label: Text("Payment", style: TextStyle(color: Colors.white))),
+                        DataColumn(label: Text("Delete", style: TextStyle(color: Colors.white))),
+                      ],
+                      rows: _filteredList.map((sell) {
+                        return DataRow(
+                          color: WidgetStateProperty.resolveWith<Color?>(
+                                (Set<WidgetState> states) => Colors.white,
                           ),
-                          DataCell(Text(sell.feedName ?? "")),
-                          DataCell(Text(sell.quantity.toString())),
-                          DataCell(Text(sell.totalAmount!.toStringAsFixed(2))),
-                          DataCell(Text(sell.modeOfPayback ?? "")),
-                          DataCell(
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.blue),
-                              onPressed: () => _deleteSell(sell),
+                          cells: [
+                            DataCell(Text(DateFormat('dd/MM/yy').format(DateTime.parse(sell.date!)))),
+                            DataCell(
+                              Text(sell.customerId ?? ""),
                             ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                                ),
+                            DataCell(Text(sell.feedName ?? "")),
+                            DataCell(Text(sell.quantity.toString())),
+                            DataCell(Text(sell.totalAmount!.toStringAsFixed(2))),
+                            DataCell(Text(sell.modeOfPayback ?? "")),
+                            DataCell(
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.blue),
+                                onPressed: () => _deleteSell(sell),
                               ),
-                ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                                  ),
+                                ),
+                  ),
+                if (_isLoading)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+              ]
+            ),
           ),
         ],
       ),

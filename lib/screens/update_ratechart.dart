@@ -127,95 +127,114 @@ class _UpdateRatechartState extends State<UpdateRatechart> with WidgetsBindingOb
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      SingleChildScrollView(
-        child: Consumer<CowRateChartProvider>(
-          builder: (context, rateChartModel, child) => Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildRateChartSection<CowRateChartProvider>(
-                      "Cow Rate Chart",
-                      minimumCowFatController,
-                      minimumCowSNFController,
-                      maximumCowFatController,
-                      maximumCowSNFController,
-                      minimumCowRateController,
-                      maximumCowRateController,
-                      minimumCowFatFocusNode,
-                      minimumCowSNFFocusNode,
-                      minimumCowRateFocusNode,
-                      maximumCowFatFocusNode,
-                      maximumCowSNFFocusNode,
-                      maximumCowRateFocusNode,
-                      saveCowFocusNode,
-                    ),
-                    SizedBox(height: 20),
-                    CustomWidgets.customButton(text: "save", onPressed: () {
-                      if(minimumCowFatController.text.isEmpty || minimumCowSNFController.text.isEmpty ||
-                          minimumCowRateController.text.isEmpty ||
-                          maximumCowFatController.text.isEmpty ||
-                          maximumCowSNFController.text.isEmpty ||
-                          maximumCowRateController.text.isEmpty
-                      )
-                      {
-                        Fluttertoast.showToast(msg: "Add all values");
-                        return;
-                      }
-                      rateChartModel.setValues(
-                        minimumCowFatController.text == "" ? "" : textToDouble(minimumCowFatController.text),
-                        textToDouble(minimumCowSNFController.text),
-                        textToDouble(minimumCowRateController.text),
-                        textToDouble(maximumCowFatController.text),
-                        textToDouble(maximumCowSNFController.text),
-                        textToDouble(maximumCowRateController.text),
-                      );
+      Stack(
+        children:[ SingleChildScrollView(
+          child: Consumer<CowRateChartProvider>(
+            builder: (context, rateChartModel, child) => Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildRateChartSection<CowRateChartProvider>(
+                        "Cow Rate Chart",
+                        minimumCowFatController,
+                        minimumCowSNFController,
+                        maximumCowFatController,
+                        maximumCowSNFController,
+                        minimumCowRateController,
+                        maximumCowRateController,
+                        minimumCowFatFocusNode,
+                        minimumCowSNFFocusNode,
+                        minimumCowRateFocusNode,
+                        maximumCowFatFocusNode,
+                        maximumCowSNFFocusNode,
+                        maximumCowRateFocusNode,
+                        saveCowFocusNode,
+                      ),
+                      SizedBox(height: 20),
+                      CustomWidgets.customButton(text: "save", onPressed: () {
+                        if(minimumCowFatController.text.isEmpty || minimumCowSNFController.text.isEmpty ||
+                            minimumCowRateController.text.isEmpty ||
+                            maximumCowFatController.text.isEmpty ||
+                            maximumCowSNFController.text.isEmpty ||
+                            maximumCowRateController.text.isEmpty
+                        )
+                        {
+                          Fluttertoast.showToast(msg: "Add all values");
+                          return;
+                        }
+                        rateChartModel.setValues(
+                          minimumCowFatController.text == "" ? "" : textToDouble(minimumCowFatController.text),
+                          textToDouble(minimumCowSNFController.text),
+                          textToDouble(minimumCowRateController.text),
+                          textToDouble(maximumCowFatController.text),
+                          textToDouble(maximumCowSNFController.text),
+                          textToDouble(maximumCowRateController.text),
+                        );
 
-                      Fluttertoast.showToast(msg: "saved",backgroundColor: Colors.green);
-                    })
+                        Fluttertoast.showToast(msg: "saved",backgroundColor: Colors.green);
+                      })
+                    ],
+                  ),
+                ),
+                Divider(),
+                Center(
+                  child: Text(
+                    rateChartModel.filePicked ? "Rate chart for cow is uploaded" : "RateChart for cow is not uploaded",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Column(
+                  children: [
+                    CustomWidgets.customButton(text: "Upload Rate chart", onPressed: (){
+                      rateChartModel.pickExcelFile();
+                    }),
+                    SizedBox(height: 10),
+              ElevatedButton(
+                onPressed:  () async {
+                    setState(() {
+                          isLoading = true;
+                    });
+
+                         await Future.delayed(Duration(milliseconds: 100)); // Let loader appear
+
+                    if (rateChartModel.filePicked) {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ExcelViewer('cow')),
+                         );
+                    }
+                    else {
+                    Fluttertoast.showToast(msg: "Upload rate chart first");
+                    }
+
+                    setState(() {
+                          isLoading = false;
+                    });
+                    },
+                style: ElevatedButton.styleFrom(backgroundColor: !isLoading? Color(0xFF24A1DE):Colors.grey ),
+                child:  isLoading
+                    ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : Text("Open file", style: TextStyle(color:Colors.white)),
+              ),
+
                   ],
                 ),
-              ),
-              Divider(),
-              Center(
-                child: Text(
-                  rateChartModel.filePicked ? "Rate chart for cow is uploaded" : "RateChart for cow is not uploaded",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-              ),
-              SizedBox(height: 20),
-              Column(
-                children: [
-                  CustomWidgets.customButton(text: "Upload Rate chart", onPressed: (){
-                    rateChartModel.pickExcelFile();
-                  }),
-                  SizedBox(height: 10),
-                  if(!isLoading)
-                  CustomWidgets.customButton(text: "Open File",onPressed:() {
-                    // TODO: Add logic to open the file if needed
-                    setState(() {
-                      isLoading = true;
-                    });
-                    if(rateChartModel.filePicked) {
-                      Navigator.push(context, MaterialPageRoute(builder: (
-                          context) => ExcelViewer('cow')));
-                    }
-                    else{
-                      Fluttertoast.showToast(msg: "Upload rate chart first");
-                    }
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }, ),
-                  if(isLoading)
-                    CircularProgressIndicator()
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        ]
       ),
       SingleChildScrollView(
         child: Consumer<BuffaloRatechartProvider>(
@@ -280,17 +299,41 @@ class _UpdateRatechartState extends State<UpdateRatechart> with WidgetsBindingOb
                 children: [
                   CustomWidgets.customButton(text: "Upload rate chart", onPressed: rateChartModel.pickExcelFile),
                   SizedBox(height: 10),
-                  CustomWidgets.customButton(text: "Open File", onPressed: () {
-                    // TODO: Add logic to open the file if needed
-                    if(rateChartModel.filePicked)
-                    {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ExcelViewer('buffalo')));
-                    }
-                    else{
-                      Fluttertoast.showToast(msg: "Upload file first");
-                    }
+                  ElevatedButton(
+                    onPressed:  () async {
+                      setState(() {
+                        isLoading = true;
+                      });
 
-                  }),
+                      await Future.delayed(Duration(milliseconds: 100)); // Let loader appear
+
+                      if (rateChartModel.filePicked) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ExcelViewer('buffalo')),
+                        );
+                      }
+                      else {
+                        Fluttertoast.showToast(msg: "Upload rate chart first");
+                      }
+
+                      setState(() {
+                        isLoading = false;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: !isLoading? Color(0xFF24A1DE):Colors.grey ),
+                    child:  isLoading
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : Text("Open file", style: TextStyle(color:Colors.white)),
+                  ),
+
 
                 ],
               ),

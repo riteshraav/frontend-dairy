@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import '../../main.dart';
 import '../../screens/customer_screens/add_customer.dart';
 import '../../screens/customer_screens/search_customer.dart';
 import '../../widgets/appbar.dart';
 
 
-class CustomerPage extends StatelessWidget {
+class CustomerPage extends StatefulWidget{
   CustomerPage({super.key});
+
+  @override
+  State<CustomerPage> createState() => _CustomerPageState();
+}
+
+class _CustomerPageState extends State<CustomerPage>  {
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

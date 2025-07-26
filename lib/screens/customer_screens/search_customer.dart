@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
+import '../../main.dart';
 import '../../model/Customer.dart';
 import '../../screens/customer_screens/view_history.dart';
 import '../../screens/generate_reports/aavak_report.dart';
@@ -20,7 +21,7 @@ class SearchCustomerPage extends StatefulWidget {
   _SearchCustomerPageState createState() => _SearchCustomerPageState();
 }
 
-class _SearchCustomerPageState extends State<SearchCustomerPage> with TickerProviderStateMixin {
+class _SearchCustomerPageState extends State<SearchCustomerPage> with TickerProviderStateMixin, RouteAware {
   final TextEditingController _searchController = TextEditingController();
   List<Customer> customers =[];
   List<Customer> store = [];
@@ -88,6 +89,29 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> with TickerProv
   }
   actions.addAll(initialActions);
     _searchController.addListener(_searchCustomer);
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to route observer
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+  @override
+  void didPopNext() {
+    // Called when returning to this screen
+    print("Returned to HomeScreen from another screen");
+    // ✅ Call your desired method here
+    customers = CustomWidgets.allCustomers();
+    store.clear();
+    store.addAll(customers);
+    setState(() {
+
+    });
   }
   void generateCustomerCodeList(){
     for(Customer c in selectedCustomers)

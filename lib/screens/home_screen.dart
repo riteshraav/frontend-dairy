@@ -235,71 +235,81 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: CustomWidgets.buildAppBar("New Binary Solution"),
       drawer: NewCustomDrawer(),
       backgroundColor: Colors.blue[50],
-      body:isLoading?Center(child: CircularProgressIndicator()): SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.5,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
+      body: Stack(
+        children:[ SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.5,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
+                  itemCount: 4,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => services[index]["route"]),
+                        );
+                      },
+                      child: _buildServiceCard(
+                        services[index]["title"],
+                        services[index]["icon"],
+                        services[index]["isImage"],
+                        color: services[index]["color"],
+                        isLarge: true,
+                      ),
+                    );
+                  },
                 ),
-                itemCount: 4,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => services[index]["route"]),
-                      );
-                    },
-                    child: _buildServiceCard(
-                      services[index]["title"],
-                      services[index]["icon"],
-                      services[index]["isImage"],
-                      color: services[index]["color"],
-                      isLarge: true,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 25.0),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1.0,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
+                const SizedBox(height: 25.0),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    childAspectRatio: 1.0,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
+                  itemCount: services.length - 4,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => services[index + 4]["route"]),
+                        );
+                      },
+                      child: _buildServiceCard(
+                        services[index + 4]["title"],
+                        services[index + 4]["icon"],
+                        services[index + 4]["isImage"],
+                        color: services[index + 4]["color"],
+                        isLarge: false,
+                      ),
+                    );
+                  },
                 ),
-                itemCount: services.length - 4,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => services[index + 4]["route"]),
-                      );
-                    },
-                    child: _buildServiceCard(
-                      services[index + 4]["title"],
-                      services[index + 4]["icon"],
-                      services[index + 4]["isImage"],
-                      color: services[index + 4]["color"],
-                      isLarge: false,
-                    ),
-                  );
-                },
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ]
       ),
     );
   }

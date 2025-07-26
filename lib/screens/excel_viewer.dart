@@ -518,7 +518,18 @@ class _ExcelViewerState extends State<ExcelViewer> {
             if (_hasChanges) IconButton(icon: Icon(Icons.save, color: Colors.white), onPressed: _saveChangesDialog),
           ],
         ),
-        body: isLoading?Center(child: CircularProgressIndicator()): (widget.excelType == 'cow')?cowExcelProvider():buffaloExcelProvider(),
+        body: Stack(
+          children: [
+            (widget.excelType == 'cow')?cowExcelProvider():buffaloExcelProvider(),
+            if (isLoading)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

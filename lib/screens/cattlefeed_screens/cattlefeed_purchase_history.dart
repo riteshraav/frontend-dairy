@@ -161,89 +161,92 @@ class _CattleFeedPurchaseHistoryState extends State<CattleFeedPurchaseHistory> {
         ),
       ]),
       backgroundColor: Colors.blue[50],
-      body: isLoading
-          ? const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 5,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-        ),
-      )
-          : SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  fillColor: Colors.white,
-                  filled: true,
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        filteredList = purchaseList;
-                      });
-                    },
-                  )
-                      : null,
-                  labelText: 'Enter Purchase Code',
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
+      body:Stack(
+       children:[ SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: DataTable(
-                  columnSpacing: 8,
-                  headingRowHeight: 45,
-                  border: TableBorder.all(),
-                  headingRowColor: WidgetStateProperty.all(const Color(0xFF24A1DE)),
-                  columns: const [
-                    DataColumn(label: Text("Voucher", style: TextStyle(color: Colors.white))),
-                    DataColumn(label: Text("Supplier", style: TextStyle(color: Colors.white))),
-                    DataColumn(label: Text("Feed", style: TextStyle(color: Colors.white))),
-                    DataColumn(label: Text("Qty", style: TextStyle(color: Colors.white))),
-                    DataColumn(label: Text("Amount", style: TextStyle(color: Colors.white))),
-                    DataColumn(label: Text("Payment", style: TextStyle(color: Colors.white))),
-                    DataColumn(label: Text("Delete", style: TextStyle(color: Colors.white))),
-                  ],
-                  rows: List.generate(
-                    filteredList.length,
-                        (index) {
-                      final entry = filteredList[index];
-                      return DataRow(
-                        color: WidgetStateProperty.resolveWith<Color?>(
-                              (Set<WidgetState> states) => Colors.white,
-                        ),
-                        cells: [
-                          DataCell(
-                            Text(entry.code ?? ""),
-                          ),
-                          DataCell(Text(entry.supplier ?? "")),
-                          DataCell(Text(entry.feedName ?? "")),
-                          DataCell(Text(entry.quantity.toString())),
-                          DataCell(Text(entry.totalAmount!.toStringAsFixed(2))),
-                          DataCell(Text(entry.paymentMethod ?? "")),
-                          DataCell(
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.blue),
-                              onPressed: () => _deletePurchase(entry),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          filteredList = purchaseList;
+                        });
+                      },
+                    )
+                        : null,
+                    labelText: 'Enter Purchase Code',
+                    border: const OutlineInputBorder(),
                   ),
                 ),
               ),
-            ),
-          ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: DataTable(
+                    columnSpacing: 8,
+                    headingRowHeight: 45,
+                    border: TableBorder.all(),
+                    headingRowColor: WidgetStateProperty.all(const Color(0xFF24A1DE)),
+                    columns: const [
+                      DataColumn(label: Text("Voucher", style: TextStyle(color: Colors.white))),
+                      DataColumn(label: Text("Supplier", style: TextStyle(color: Colors.white))),
+                      DataColumn(label: Text("Feed", style: TextStyle(color: Colors.white))),
+                      DataColumn(label: Text("Qty", style: TextStyle(color: Colors.white))),
+                      DataColumn(label: Text("Amount", style: TextStyle(color: Colors.white))),
+                      DataColumn(label: Text("Payment", style: TextStyle(color: Colors.white))),
+                      DataColumn(label: Text("Delete", style: TextStyle(color: Colors.white))),
+                    ],
+                    rows: List.generate(
+                      filteredList.length,
+                          (index) {
+                        final entry = filteredList[index];
+                        return DataRow(
+                          color: WidgetStateProperty.resolveWith<Color?>(
+                                (Set<WidgetState> states) => Colors.white,
+                          ),
+                          cells: [
+                            DataCell(
+                              Text(entry.code ?? ""),
+                            ),
+                            DataCell(Text(entry.supplier ?? "")),
+                            DataCell(Text(entry.feedName ?? "")),
+                            DataCell(Text(entry.quantity.toString())),
+                            DataCell(Text(entry.totalAmount!.toStringAsFixed(2))),
+                            DataCell(Text(entry.paymentMethod ?? "")),
+                            DataCell(
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.blue),
+                                onPressed: () => _deletePurchase(entry),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
+         if (isLoading)
+           Positioned.fill(
+             child: Container(
+               color: Colors.black.withOpacity(0.3),
+               child: Center(child: CircularProgressIndicator()),
+             ),
+           ),
+       ]
       ),
     );
   }

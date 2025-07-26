@@ -216,282 +216,292 @@ class _LocalMilkSalePageState extends State<LocalMilkSalePage> {
     return Scaffold(
       backgroundColor: Colors.blue[50],
       appBar: CustomWidgets.buildAppBar("Local Milk Sale"),
-      body:isLoading? Center(child: CircularProgressIndicator()): SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: dateController,
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: "Date",
-                        fillColor: Colors.white,
-                        filled: true,
-                        border: OutlineInputBorder(),
+      body: Stack(
+        children:[ SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: dateController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: "Date",
+                          fillColor: Colors.white,
+                          filled: true,
+                          border: OutlineInputBorder(),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                    child: ToggleButtons(
-                      onPressed: (int index) {
-                        setState(() {
-                          for (int i = 0; i < _paymentMethod.length; i++) {
-                            _paymentMethod[i] = i == index;
-                          }
-                          selectedType = (index == 0) ? "Credit" : "Cash";
-                        });
-                      },
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                      selectedBorderColor: Colors.blue[100],
-                      selectedColor: Colors.black,
-                      fillColor: Colors.blue[100],
-                      color: Colors.black,
-                      isSelected: _paymentMethod,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 22),
-                          child: Text("Credit"),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 22),
-                          child: Text("Cash"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              (_paymentMethod[0])
-                  ? Row(
-                children: [
-                  SizedBox(
-                    width: 112,
-                    child: Autocomplete<Customer>(
-                      optionsBuilder: (textEditingValue) {
-                        return customerList
-                            .where((c) => c.code!
-                            .contains(textEditingValue.text))
-                            .toList();
-                      },
-                      displayStringForOption: (c) =>
-                      "${c.code!} - ${c.name!}",
-                      onSelected: (Customer selection) {
-                        codeController.text = selection.code!;
-                        customerController.text = selection.name!;
-                        FocusScope.of(context).unfocus();
-                      },
-                      fieldViewBuilder:
-                          (context, controller, focusNode, _) {
-                        codeController = controller;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            labelText: "Code",
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Autocomplete<Customer>(
-                      optionsBuilder: (textEditingValue) {
-                        return customerList
-                            .where((c) => c.name!
-                            .toLowerCase()
-                            .contains(textEditingValue.text
-                            .toLowerCase()))
-                            .toList();
-                      },
-                      displayStringForOption: (c) =>
-                      "${c.code!} - ${c.name!}",
-                      onSelected: (Customer selection) {
-                        codeController.text = selection.code!;
-                        customerController.text = selection.name!;
-                        FocusScope.of(context).unfocus();
-                      },
-                      fieldViewBuilder:
-                          (context, controller, focusNode, _) {
-                        customerController = controller;
-                        return TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            labelText: "Customer Name",
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              )
-                  : SizedBox(),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                    child: ToggleButtons(
-                      onPressed: (int index) {
-                        setState(() {
-                          for (int i = 0; i < _selectedMilkType.length; i++) {
-                            _selectedMilkType[i] = i == index;
-                          }
-                          selectedCowBuff = (index == 0) ? "Buffalo" : "Cow";
-                        });
-                      },
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                      selectedBorderColor: Colors.blue[100],
-                      selectedColor: Colors.black,
-                      fillColor: Colors.blue[100],
-                      color: Colors.black,
-                      isSelected: _selectedMilkType,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text("Buffalo"),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 25),
-                          child: Text("Cow"),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: litersController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        labelText: 'Liters',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: (selectedCowBuff == "Buffalo")
-                          ? buffaloRateController
-                          : cowRateController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        labelText: 'Rate',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: amountController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        labelText: 'Amount',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      readOnly: true,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CustomWidgets.customButton(text: "Save", onPressed: saveInfo),
-                  CustomWidgets.customButton(
-                      text: "Clear", onPressed: clearAll),
-                ],
-              ),
-              SizedBox(height: 16),
-              loading?
-                Column(
-          children: [
-            Text("local sale loading.."),
-            SizedBox(height: 16,),
-            CircularProgressIndicator()
-        ],
-      ):
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columnSpacing: 10,
-                  border: TableBorder.all(),
-                  headingRowColor:
-                  MaterialStateProperty.all(Color(0xFF24A1DE)),
-                  columns: [
-                    DataColumn(
-                        label: Text("Code",
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text("M Type",
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text("Pay Type",
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text("Qty",
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text("Amt",
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text("Delete",
-                            style: TextStyle(color: Colors.white))),
-                  ],
-                  rows: List.generate(localeSaleList.length, (index) {
-                    final entry = localeSaleList[index];
-                    return DataRow(cells: [
-                      DataCell(Text(entry.customerId ?? "")),
-                      DataCell(Text(entry.milkType ?? "")),
-                      DataCell(Text(entry.paymentType)),
-                      DataCell(Text(entry.quantity.toStringAsFixed(2))),
-                      DataCell(Text(entry.totalValue.toStringAsFixed(2))),
-                      DataCell(IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          deleteEntry(index);
+                    SizedBox(width: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(Radius.circular(8))),
+                      child: ToggleButtons(
+                        onPressed: (int index) {
+                          setState(() {
+                            for (int i = 0; i < _paymentMethod.length; i++) {
+                              _paymentMethod[i] = i == index;
+                            }
+                            selectedType = (index == 0) ? "Credit" : "Cash";
+                          });
                         },
-                      )),
-                    ]);
-                  }),
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        selectedBorderColor: Colors.blue[100],
+                        selectedColor: Colors.black,
+                        fillColor: Colors.blue[100],
+                        color: Colors.black,
+                        isSelected: _paymentMethod,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 22),
+                            child: Text("Credit"),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 22),
+                            child: Text("Cash"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                SizedBox(height: 16),
+                (_paymentMethod[0])
+                    ? Row(
+                  children: [
+                    SizedBox(
+                      width: 112,
+                      child: Autocomplete<Customer>(
+                        optionsBuilder: (textEditingValue) {
+                          return customerList
+                              .where((c) => c.code!
+                              .contains(textEditingValue.text))
+                              .toList();
+                        },
+                        displayStringForOption: (c) =>
+                        "${c.code!} - ${c.name!}",
+                        onSelected: (Customer selection) {
+                          codeController.text = selection.code!;
+                          customerController.text = selection.name!;
+                          FocusScope.of(context).unfocus();
+                        },
+                        fieldViewBuilder:
+                            (context, controller, focusNode, _) {
+                          codeController = controller;
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              labelText: "Code",
+                              border: OutlineInputBorder(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Autocomplete<Customer>(
+                        optionsBuilder: (textEditingValue) {
+                          return customerList
+                              .where((c) => c.name!
+                              .toLowerCase()
+                              .contains(textEditingValue.text
+                              .toLowerCase()))
+                              .toList();
+                        },
+                        displayStringForOption: (c) =>
+                        "${c.code!} - ${c.name!}",
+                        onSelected: (Customer selection) {
+                          codeController.text = selection.code!;
+                          customerController.text = selection.name!;
+                          FocusScope.of(context).unfocus();
+                        },
+                        fieldViewBuilder:
+                            (context, controller, focusNode, _) {
+                          customerController = controller;
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              labelText: "Customer Name",
+                              border: OutlineInputBorder(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                )
+                    : SizedBox(),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(Radius.circular(8))),
+                      child: ToggleButtons(
+                        onPressed: (int index) {
+                          setState(() {
+                            for (int i = 0; i < _selectedMilkType.length; i++) {
+                              _selectedMilkType[i] = i == index;
+                            }
+                            selectedCowBuff = (index == 0) ? "Buffalo" : "Cow";
+                          });
+                        },
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        selectedBorderColor: Colors.blue[100],
+                        selectedColor: Colors.black,
+                        fillColor: Colors.blue[100],
+                        color: Colors.black,
+                        isSelected: _selectedMilkType,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text("Buffalo"),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 25),
+                            child: Text("Cow"),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: litersController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          labelText: 'Liters',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: (selectedCowBuff == "Buffalo")
+                            ? buffaloRateController
+                            : cowRateController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          labelText: 'Rate',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: amountController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          labelText: 'Amount',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        readOnly: true,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CustomWidgets.customButton(text: "Save", onPressed: saveInfo),
+                    CustomWidgets.customButton(
+                        text: "Clear", onPressed: clearAll),
+                  ],
+                ),
+                SizedBox(height: 16),
+                loading?
+                  Column(
+            children: [
+              Text("local sale loading.."),
+              SizedBox(height: 16,),
+              CircularProgressIndicator()
+          ],
+        ):
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columnSpacing: 10,
+                    border: TableBorder.all(),
+                    headingRowColor:
+                    MaterialStateProperty.all(Color(0xFF24A1DE)),
+                    columns: [
+                      DataColumn(
+                          label: Text("Code",
+                              style: TextStyle(color: Colors.white))),
+                      DataColumn(
+                          label: Text("M Type",
+                              style: TextStyle(color: Colors.white))),
+                      DataColumn(
+                          label: Text("Pay Type",
+                              style: TextStyle(color: Colors.white))),
+                      DataColumn(
+                          label: Text("Qty",
+                              style: TextStyle(color: Colors.white))),
+                      DataColumn(
+                          label: Text("Amt",
+                              style: TextStyle(color: Colors.white))),
+                      DataColumn(
+                          label: Text("Delete",
+                              style: TextStyle(color: Colors.white))),
+                    ],
+                    rows: List.generate(localeSaleList.length, (index) {
+                      final entry = localeSaleList[index];
+                      return DataRow(cells: [
+                        DataCell(Text(entry.customerId ?? "")),
+                        DataCell(Text(entry.milkType ?? "")),
+                        DataCell(Text(entry.paymentType)),
+                        DataCell(Text(entry.quantity.toStringAsFixed(2))),
+                        DataCell(Text(entry.totalValue.toStringAsFixed(2))),
+                        DataCell(IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            deleteEntry(index);
+                          },
+                        )),
+                      ]);
+                    }),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ]
       ),
     );
   }

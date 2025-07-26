@@ -1,19 +1,19 @@
+import 'package:DairySpace/providers/buffalo_ratechart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../model/admin.dart';
 import '../model/milk_collection.dart';
+import '../providers/cow_ratechart_provider.dart';
 import '../service/mik_collection_service.dart';
 import '../widgets/appbar.dart';
 
 import '../model/Customer.dart';
 import 'auth_screens/login_screen.dart';
-import 'filter.dart';
 
 class TodaysCollectionScreen extends StatefulWidget {
-  List<MilkCollection> currentCollection ;
-  DateTime currentDate;
-  TodaysCollectionScreen(this.currentCollection,this.currentDate);
+
+  TodaysCollectionScreen();
   @override
   State<TodaysCollectionScreen> createState() => _TodaysCollectionScreenState();
 }
@@ -34,8 +34,8 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    currentDateCollection.addAll(widget.currentCollection);
-    currentDate =  widget.currentDate;
+    currentDate =  DateTime.now();
+    loadDataForCurrentDate();
     sortList();
   }
 
@@ -83,7 +83,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
     });
     if(isBuffaloSelected && isCowSelected || (isBuffaloSelected == false && isCowSelected == false))
     {
-      filteredList.addAll(widget.currentCollection);
+      filteredList.addAll(currentDateCollection);
       setState(() {
         currentDateCollection = filteredList;
       });
@@ -94,7 +94,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
     }
     if(isBuffaloSelected)
     {
-      for(MilkCollection c in widget.currentCollection)
+      for(MilkCollection c in currentDateCollection)
       {
         if(c.milkType == "buffalo") {
           filteredList.add(c);
@@ -107,7 +107,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
     }
     if(isCowSelected)
     {
-      for(MilkCollection c in widget.currentCollection)
+      for(MilkCollection c in currentDateCollection)
       {
         if(c.milkType == "cow") {
           filteredList.add(c);
@@ -131,7 +131,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
     List<MilkCollection> filteredList = [...currentDateCollection];
     if(isEveningSelected)
     {
-      for(MilkCollection c in widget.currentCollection)
+      for(MilkCollection c in currentDateCollection)
       {
         if(c.time != "Evening") {
           filteredList.remove(c);
@@ -144,7 +144,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
     }
     if(isMorningSelected)
     {
-      for(MilkCollection c in widget.currentCollection)
+      for(MilkCollection c in currentDateCollection)
       {
         if(c.time != "Morning") {
           filteredList.remove(c);
@@ -186,8 +186,8 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
         return;
       }
     setState(() {
-      widget.currentCollection.clear();
-      widget.currentCollection.addAll(list);
+      currentDateCollection.clear();
+      currentDateCollection.addAll(list);
       currentDateCollection.clear();
       currentDateCollection.addAll(list);
       isSearchLoading = false;
@@ -377,17 +377,33 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
               (route) => false, // Clears entire stack
         );
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error")));
-
         return;
       }
       if(status != "Unsuccessful")
         {
             currentDateCollection.remove(collection);
-            setState(() {
+            if(collection.milkType == 'buffalo')
+              {
+                if(collection.time == 'Morning') {
+                  Provider.of<BuffaloRatechartProvider>(context, listen: false).morningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context, listen: false).morningBuffaloQuantity  - collection.quantity!  ;
+                }
+                else{
+                  Provider.of<BuffaloRatechartProvider>(context, listen: false).eveningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context, listen: false).eveningBuffaloQuantity  - collection.quantity!  ;
 
+                }
+              }
+            else{
+              if(collection.time == 'Morning') {
+                Provider.of<CowRateChartProvider>(context, listen: false).morningCowQuantity = Provider.of<CowRateChartProvider>(context, listen: false).morningCowQuantity  - collection.quantity!  ;
+              }
+              else{
+                Provider.of<CowRateChartProvider>(context, listen: false).eveningCowQuantity = Provider.of<CowRateChartProvider>(context, listen: false).eveningCowQuantity  - collection.quantity!  ;
+
+              }
+              }
+            setState(() {
             });
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Changes saved!")));
-
         }
 
 

@@ -381,8 +381,6 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
   void setDatesForHistory(){
     fromDate = DateTime.now().subtract(Duration(days: 10));
     toDate = DateTime.now();
-    fromDate = DateTime(2025,2,5).subtract(Duration(days: 10));
-    toDate = DateTime(2025,2,5);
   }
   void checkReportGenerationForReport(){
     if(!(isCowSelected || isBuffaloSelected))
@@ -480,192 +478,200 @@ class _ReportSpecificationsPageState extends State<ReportSpecificationsPage> {
       backgroundColor: Colors.blue[50],
       appBar: CustomWidgets.buildAppBar(widget.title),
       drawer: NewCustomDrawer(),
-      body:isLoading? Center(child: CircularProgressIndicator()): Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Animal selection checkboxes
-            if(widget.title != "Customer Bill" && widget.title != "Ledger Report")
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child:       Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      activeColor: Colors.blue,      // Checkbox background when checked
-                      checkColor: Colors.white,
-                      value: isCowSelected,
-                      onChanged: (value) {
-                        setState(() {
-                          isCowSelected = value!;
-                        });
-                      },
-                    ),
-                    Text('Cow'),
-                    SizedBox(width: 50,),
-                    Checkbox(
-                      activeColor: Colors.blue,      // Checkbox background when checked
-                      checkColor: Colors.white,                  value: isBuffaloSelected,
-                      onChanged: (value) {
-                        setState(() {
-                          isBuffaloSelected = value!;
-                        });
-                      },
-                    ),
-                    Text('Buffalo'),
-                  ],
+      body: Stack(
+        children:[ Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Animal selection checkboxes
+              if(widget.title != "Customer Bill" && widget.title != "Ledger Report")
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ),
-            ),
-            SizedBox(height: 20),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: InkWell(
-                onTap: checkReportGenerationForReport,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
+                  child:       Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.calendar_month_outlined,size: 50, color: Color(0xFF24A1DE)),
-                      SizedBox(height: 10),
-                      Text("10 Days Report",
-                        style: TextStyle(
-                          fontSize: 18,
-
-                        ),
+                      Checkbox(
+                        activeColor: Colors.blue,      // Checkbox background when checked
+                        checkColor: Colors.white,
+                        value: isCowSelected,
+                        onChanged: (value) {
+                          setState(() {
+                            isCowSelected = value!;
+                          });
+                        },
                       ),
+                      Text('Cow'),
+                      SizedBox(width: 50,),
+                      Checkbox(
+                        activeColor: Colors.blue,      // Checkbox background when checked
+                        checkColor: Colors.white,                  value: isBuffaloSelected,
+                        onChanged: (value) {
+                          setState(() {
+                            isBuffaloSelected = value!;
+                          });
+                        },
+                      ),
+                      Text('Buffalo'),
                     ],
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: InkWell(
-                onTap: checkReportGenerationForHistory,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_month_outlined,size: 50, color: Color(0xFF24A1DE)),
-                      SizedBox(height: 10),
-                      Text("Recent 10 days history",
-                        style: TextStyle(
-                          fontSize: 18,
+              SizedBox(height: 20),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: InkWell(
+                  onTap: checkReportGenerationForReport,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_month_outlined,size: 50, color: Color(0xFF24A1DE)),
+                        SizedBox(height: 10),
+                        Text("10 Days Report",
+                          style: TextStyle(
+                            fontSize: 18,
 
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: InkWell(
+                  onTap: checkReportGenerationForHistory,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_month_outlined,size: 50, color: Color(0xFF24A1DE)),
+                        SizedBox(height: 10),
+                        Text("Recent 10 days history",
+                          style: TextStyle(
+                            fontSize: 18,
+
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(28.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text("Customise Dates",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
+                        ],
                       ),
+                      SizedBox(height: 20,),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // From Date Field
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'From Date:',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 8),
+                              InkWell(
+                                onTap: () => pickDate(context, true),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    fromDate == null
+                                        ? 'DD/MM/YYYY'
+                                        : '${fromDate?.day.toString().padLeft(2, '0')}/${fromDate?.month.toString().padLeft(2, '0')}/${fromDate?.year}',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // To Date Field
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'To Date:',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 8),
+                              InkWell(
+                                onTap: () => pickDate(context, false),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    toDate == null
+                                        ? 'DD/MM/YYYY'
+                                        : '${toDate?.day.toString().padLeft(2, '0')}/${toDate?.month.toString().padLeft(2, '0')}/${toDate?.year}',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: CustomWidgets.customButton(text:  "Generate Report",
+                         onPressed:  checkReportGenerationForButton
+                        ),
+                      )
                     ],
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text("Customise Dates",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
-                      ],
-                    ),
-                    SizedBox(height: 20,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // From Date Field
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'From Date:',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8),
-                            InkWell(
-                              onTap: () => pickDate(context, true),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  fromDate == null
-                                      ? 'DD/MM/YYYY'
-                                      : '${fromDate?.day.toString().padLeft(2, '0')}/${fromDate?.month.toString().padLeft(2, '0')}/${fromDate?.year}',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // To Date Field
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'To Date:',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8),
-                            InkWell(
-                              onTap: () => pickDate(context, false),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  toDate == null
-                                      ? 'DD/MM/YYYY'
-                                      : '${toDate?.day.toString().padLeft(2, '0')}/${toDate?.month.toString().padLeft(2, '0')}/${toDate?.year}',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(18.0),
-                      child: CustomWidgets.customButton(text:  "Generate Report",
-                       onPressed:  checkReportGenerationForButton
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-
-
-          ],
+            ],
+          ),
         ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ]
       ),
     );
   }

@@ -26,6 +26,7 @@ import 'providers/cow_ratechart_provider.dart';
 
 import 'model/cattleFeedSupplierQueue.dart';
 
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,6 +74,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_)=>QuantityProvider())
       ],
       child: MaterialApp(
+        navigatorObservers: [routeObserver],
         debugShowCheckedModeBanner: false,
         title: 'Login Page',
         theme: ThemeData(

@@ -15,14 +15,28 @@ class BuffaloRatechartProvider extends ChangeNotifier {
   bool filePicked = false;
 
   List<RateChartInfo> rateChartHistory = [];
+  double _morningBuffaloQuantity = 0;
 
+  double get morningBuffaloQuantity => _morningBuffaloQuantity;
+
+  set morningBuffaloQuantity(double value) {
+    _morningBuffaloQuantity = value;
+    Admin admin = CustomWidgets().currentAdminNonStatic();
+    var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
+    BuffaloRateData buffaloRateData  = buffaloBox.get('buffaloRateData_${admin.id}')??BuffaloRateData();
+    buffaloRateData.morningQuantity = value;
+    buffaloBox.put('buffaloRateData_${admin.id}', buffaloRateData);
+    notifyListeners();
+  }
+
+  double _eveningBuffaloQuantity = 0;
   int? row;
 
   int? col;
 
   String name = "";
 
-  double? minimumBuffaloFat;
+  double? minimumBuffaloFat ;
 
   double? minimumBuffaloSNF;
 
@@ -61,6 +75,10 @@ class BuffaloRatechartProvider extends ChangeNotifier {
     minimumBuffaloSNF = rateData.minimumBuffaloSNF;
     minimumBuffaloRate = rateData.minimumBuffaloRate;
     localMilkSaleBuffalo = rateData.localMilkSaleBuffalo!;
+    col = rateData.col;
+    row = rateData.row;
+    morningBuffaloQuantity = rateData.morningQuantity;
+    eveningBuffaloQuantity = rateData.eveningQuantity;
     notifyListeners();
   }
 
@@ -172,6 +190,7 @@ class BuffaloRatechartProvider extends ChangeNotifier {
        Admin admin = CustomWidgets().currentAdminNonStatic();
        var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
        BuffaloRateData buffaloRateData  = buffaloBox.get('buffaloRateData_${admin.id}')??BuffaloRateData();
+
       if(searchValue("3.00")) {
         buffaloRateData.excelData = excelData;
         filePicked = true;
@@ -211,26 +230,44 @@ class BuffaloRatechartProvider extends ChangeNotifier {
     return false;
 
   }
-  double findRate(double fat,double snf){
-
-    if((minimumBuffaloFat != null && minimumBuffaloSNF != null) && fat < minimumBuffaloFat! || snf < minimumBuffaloSNF!)
-    {
+  double findRate(double fat, double snf) {
+    // Case 1: Minimum bounds check
+    if ((minimumBuffaloFat != null && minimumBuffaloSNF != null) &&
+        (fat < minimumBuffaloFat! || snf < minimumBuffaloSNF!)) {
       return minimumBuffaloRate!;
     }
-    else if((maximumBuffaloFat != null && maximumBuffaloSNF != null ) && fat > maximumBuffaloFat! || snf > maximumBuffaloSNF!)
-    {
+
+    // Case 2: Maximum bounds check
+    else if ((maximumBuffaloFat != null && maximumBuffaloSNF != null) &&
+        (fat > maximumBuffaloFat! || snf > maximumBuffaloSNF!)) {
       return maximumBuffaloRate!;
     }
-    else
-    {
-      print("row = $row fat = ${fat}  col = ${col}  snf = ${snf}");
-      int excelRow = (row! + ((fat - 3)*10).round());
-      int excelCol = ((1+col!+ (snf-8)*10).round());
-      print("excel row $excelRow  excel col $excelCol" );
+
+
+    // Case 3: Default when no bounds or within range
+    else {
+      print("row = $row fat = $fat  col = $col  snf = $snf");
+
+      int excelRow = row! + ((fat - 3) * 10).round();
+      int excelCol = 1 + col! + ((snf - 8) * 10).round();
+
+      print("excel row $excelRow  excel col $excelCol");
       print("snf is ${excelData[excelRow][col!]}");
       print("fat is ${excelData[row!][excelCol]}");
+
       return double.parse(excelData[excelRow][excelCol]);
     }
+  }
 
+  double get eveningBuffaloQuantity => _eveningBuffaloQuantity;
+
+  set eveningBuffaloQuantity(double value) {
+    _eveningBuffaloQuantity = value;
+    Admin admin = CustomWidgets().currentAdminNonStatic();
+    var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
+    BuffaloRateData buffaloRateData  = buffaloBox.get('buffaloRateData_${admin.id}')??BuffaloRateData();
+    buffaloRateData.eveningQuantity = value;
+    buffaloBox.put('buffaloRateData_${admin.id}', buffaloRateData);
+    notifyListeners();
   }
 }

@@ -40,7 +40,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
   final TextEditingController bankAccountNoController = TextEditingController();
   final TextEditingController animalCountController = TextEditingController();
   final TextEditingController averageMilkController = TextEditingController();
-
+  bool isLoading = false;
   String? milkType;
   String? className;
   String? branch;
@@ -204,10 +204,21 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
     if(widget.customer != null)
     {
       _idController.text = widget.customer!.code!;
-      _nameController.text = widget.customer!.name!;
-      _phoneController.text = widget.customer!.phone!;
-      isCowSelected = widget.customer!.cow!;
-      isBuffaloSelected = widget.customer!.buffalo!;
+      _nameController.text = widget.customer!.name ?? '';
+      _phoneController.text = widget.customer!.phone ?? '';
+      isCowSelected = widget.customer!.cow ?? false;
+      isBuffaloSelected = widget.customer!.buffalo ?? false;
+      emailController.text = widget.customer!.email ?? '';
+      alternativemobileController.text = widget.customer!.alternateNumber??'';
+      panController.text = widget.customer!.panNo ?? '';
+      aadharController.text = widget.customer!.aadharNo ?? '';
+      ifscCodeController.text = widget.customer!.ifscNo ?? '';
+      bankCodeController.text = widget.customer!.bankCode ?? '';
+      sabhasaadController.text = widget.customer!.sabhasadNo ?? '';
+      bankBranchController.text = widget.customer!.bankBranchName ?? '';
+      bankAccountNoController.text = widget.customer!.bankAccountNo ?? '';
+      animalCountController.text = widget.customer!.animalCount.toString() ;
+      averageMilkController.text = widget.customer!.averageMilk.toString() ;
     }
     else{
       _idController.text = (widget.admin.customerSequence!+1).toString();
@@ -450,169 +461,180 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue[50],
-      appBar: CustomWidgets.buildAppBar("Add Customer"),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildTextField(labelText: 'Code',
-                    keyboardType: TextInputType.number,controller: _idController,readonly: true),
-                _buildTextField(labelText: 'Customer Name',controller: _nameController,
-                    validator: validateCustomerName),
-                SizedBox(height: 20),
+      appBar: CustomWidgets.buildAppBar(widget.customer == null ?"Add Customer":"Edit Customer"),
+      body: Stack(
+        children:[ Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTextField(labelText: 'Code',
+                      keyboardType: TextInputType.number,controller: _idController,readonly: true),
+                  _buildTextField(labelText: 'Customer Name',controller: _nameController,
+                      validator: validateCustomerName),
+                  SizedBox(height: 20),
 
-                // Row for dropdowns
-                Row(
-                  children: [
-                    Flexible(child: _buildDropdownField('Milk Type', ['Cow', 'Buffalo', 'Cow & Buffalo'],currentMilkType(), validator:(value)=> value==null ? 'please select milk type':null,),),
-                    SizedBox(width: 10),
-                    Flexible(child: _buildDropdownField('Class', ['A', 'B', 'C'],widget.customer?.classType,validator:(value)=> value==null ? 'Please select class' : null,),),
-                  ],
-                ),
+                  // Row for dropdowns
+                  Row(
+                    children: [
+                      Flexible(child: _buildDropdownField('Milk Type', ['Cow', 'Buffalo', 'Cow & Buffalo'],currentMilkType(), validator:(value)=> value==null ? 'please select milk type':null,),),
+                      SizedBox(width: 10),
+                      Flexible(child: _buildDropdownField('Class', ['A', 'B', 'C'],widget.customer?.classType,validator:(value)=> value==null ? 'Please select class' : null,),),
+                    ],
+                  ),
 
-                SizedBox(height: 15),
-                Row(
-                  children: [
-                    Flexible(child: _buildDropdownField('Branch', ['Branch1', 'Branch2', 'Branch3'],widget.customer?.branchName,validator: (value)=> value==null? 'please select class': null,),),
-                  ],
-                ),
-                SizedBox(height: 15),
+                  SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Flexible(child: _buildDropdownField('Branch', ['Branch1', 'Branch2', 'Branch3'],widget.customer?.branchName,validator: (value)=> value==null? 'please select class': null,),),
+                    ],
+                  ),
+                  SizedBox(height: 15),
 
-                Row(
-                  children: [
-                    Expanded(child: _buildDropdownField('Gender', ['Male', 'Female'], widget.customer?.gender,validator: (value)=> value==null?'please select Gender': null,),),
-                    SizedBox(width: 10),
-                    Expanded(child: _buildDropdownField('Caste', ['Caste1', 'Caste2', 'Caste3'],widget.customer?.caste, validator: (value)=> value==null? 'please select caste':null),),
-                  ],
-                ),
-                SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(child: _buildDropdownField('Gender', ['Male', 'Female'], widget.customer?.gender,validator: (value)=> value==null?'please select Gender': null,),),
+                      SizedBox(width: 10),
+                      Expanded(child: _buildDropdownField('Caste', ['Caste1', 'Caste2', 'Caste3'],widget.customer?.caste, validator: (value)=> value==null? 'please select caste':null),),
+                    ],
+                  ),
+                  SizedBox(height: 15),
 
-                // Mobile Fields
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        labelText: 'Mobile Number',
-                        controller: _phoneController,
+                  // Mobile Fields
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          labelText: 'Mobile Number',
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          validator: validateMobile,
+                        ),
+                      ),
+
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(labelText: 'Alternative Mobile Number',
+                        controller: alternativemobileController,
                         keyboardType: TextInputType.phone,
-                        validator: validateMobile,
+                        validator: validateAlternativemobile,)),
+                    ],
+
+                  ),
+                  SizedBox(height:15),
+                  // Email Field
+                  _buildTextField(
+                    labelText: 'Email',
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: validateEmail,
+                  ),
+                  // SizedBox(height: 15),
+                  //
+                  // // Account & Bank Fields
+                  // _buildTextField(labelText: 'Account No',
+                  //   controller: accountNumberController,
+                  //   keyboardType: TextInputType.number,
+                  //   validator: ValidateAccountNo,
+                  // ),
+                  SizedBox(height: 15),
+
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(labelText: 'Bank Code',
+                          controller: bankCodeController,
+
+                          validator: validateBankCode)),
+                      SizedBox(width: 10),
+                      Expanded(child: _buildTextField(labelText: 'Sabhasad No',
+                          keyboardType: TextInputType.number,
+                          controller: sabhasaadController,
+                          validator: Validatesabhsaadnumber),
                       ),
-                    ),
+                    ],
+                  ),
+                  SizedBox(height: 15),
 
-                  ],
-                ),
-                SizedBox(height: 15),
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField(labelText: 'Alternative Mobile Number',
-                      controller: alternativemobileController,
-                      keyboardType: TextInputType.phone,
-                      validator: validateAlternativemobile,)),
-                  ],
+                  _buildTextField(labelText: 'Bank Branch Name',
+                      keyboardType: TextInputType.text,
+                      controller: bankBranchController,
+                      validator:validateBankName),
+                  SizedBox(height: 15),
 
-                ),
-                SizedBox(height:15),
-                // Email Field
-                _buildTextField(
-                  labelText: 'Email',
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: validateEmail,
-                ),
-                // SizedBox(height: 15),
-                //
-                // // Account & Bank Fields
-                // _buildTextField(labelText: 'Account No',
-                //   controller: accountNumberController,
-                //   keyboardType: TextInputType.number,
-                //   validator: ValidateAccountNo,
-                // ),
-                SizedBox(height: 15),
-
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField(labelText: 'Bank Code',
-                        controller: bankCodeController,
-
-                        validator: validateBankCode)),
-                    SizedBox(width: 10),
-                    Expanded(child: _buildTextField(labelText: 'Sabhasad No',
-                        keyboardType: TextInputType.number,
-                        controller: sabhasaadController,
-                        validator: Validatesabhsaadnumber),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 15),
-
-                _buildTextField(labelText: 'Bank Branch Name',
-                    keyboardType: TextInputType.text,
-                    controller: bankBranchController,
-                    validator:validateBankName),
-                SizedBox(height: 15),
-
-                _buildTextField(labelText: 'Bank Account Number',
-                    keyboardType: TextInputType.number,
-                    controller: bankAccountNoController,
-                    validator: ValidateBankAccountNo),
-                SizedBox(height: 15),
-
-                _buildTextField(labelText: 'IFSC Code',
-                  controller: ifscCodeController,
-                  keyboardType: TextInputType.text,
-                  validator: validateIFSC,
-                ),
-                SizedBox(height: 15),
-
-                // Aadhar & PAN Fields
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField(labelText: 'Aadhar Number'
-                      ,controller: aadharController,
+                  _buildTextField(labelText: 'Bank Account Number',
                       keyboardType: TextInputType.number,
-                      validator: validateAadhar,)),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: _buildTextField(
-                        labelText: 'Pan Number',
-                        controller: panController,
-                        keyboardType: TextInputType.text,
-                        validator: validatePAN,
+                      controller: bankAccountNoController,
+                      validator: ValidateBankAccountNo),
+                  SizedBox(height: 15),
+
+                  _buildTextField(labelText: 'IFSC Code',
+                    controller: ifscCodeController,
+                    keyboardType: TextInputType.text,
+                    validator: validateIFSC,
+                  ),
+                  SizedBox(height: 15),
+
+                  // Aadhar & PAN Fields
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(labelText: 'Aadhar Number'
+                        ,controller: aadharController,
+                        keyboardType: TextInputType.number,
+                        validator: validateAadhar,)),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: _buildTextField(
+                          labelText: 'Pan Number',
+                          controller: panController,
+                          keyboardType: TextInputType.text,
+                          validator: validatePAN,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 15),
+                    ],
+                  ),
+                  SizedBox(height: 15),
 
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField(labelText: 'Milk animal Count',
-                        keyboardType: TextInputType.number,controller: animalCountController,
-                        validator :validateanimalcount)),
-                    SizedBox(width: 10),
-                    Expanded(child: _buildTextField(labelText: 'Average Milk Production',
-                        keyboardType: TextInputType.number,controller: averageMilkController,validator :validateavgmilk)),
-                  ],
-                ),
-                SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(labelText: 'Milk animal Count',
+                          keyboardType: TextInputType.number,controller: animalCountController,
+                          validator :validateanimalcount)),
+                      SizedBox(width: 10),
+                      Expanded(child: _buildTextField(labelText: 'Average Milk Production',
+                          keyboardType: TextInputType.number,controller: averageMilkController,validator :validateavgmilk)),
+                    ],
+                  ),
+                  SizedBox(height: 15),
 
-                // Submit Button
-                CustomWidgets.customButton(text:  "Submit",onPressed:  (){
-                  if (_formKey.currentState!.validate()) {
-                    print("validated all");
-                    _saveCustomer();
-                  }
-                  else{
-                    Fluttertoast.showToast(msg: "Add Validations");
-                  }
-                })
-              ],
+                  // Submit Button
+                  CustomWidgets.customButton(text:  "Submit",onPressed:  (){
+                    if (_formKey.currentState!.validate()) {
+                      print("validated all");
+                      _saveCustomer();
+                    }
+                    else{
+                      Fluttertoast.showToast(msg: "Add Validations");
+                    }
+                  })
+                ],
+              ),
             ),
           ),
         ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ]
+
       ),
     );
   }
@@ -636,7 +658,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
           fillColor: Colors.white,
           border: OutlineInputBorder(),
         ),
-        validator: validator,
+     //   validator: validator,
         // Apply validation if provided
       ),
     );
