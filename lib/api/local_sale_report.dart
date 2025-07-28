@@ -4,8 +4,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/widgets.dart';
 
 import '../model/localsale.dart';
-import '../model/milk_collection.dart';
-import '../model/Customer.dart';
 import '../model/admin.dart';
 import '../widgets/appbar.dart';
 
@@ -43,6 +41,18 @@ List<LocalMilkSale> formatData(List<LocalMilkSale> list)
   list.sort((a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)));
   return list;
 }
+
+String findTime(String date)
+{
+  if(DateTime.parse(date).hour < 12)
+    {
+        return 'M';
+    }
+  else{
+    return 'E';
+  }
+}
+
   Future<Document> generate() async {
     final pdf = Document();
     pdf.addPage(
@@ -97,6 +107,7 @@ List<LocalMilkSale> formatData(List<LocalMilkSale> list)
         4: pw.FixedColumnWidth(1), // Evening (Fixed width)
         5: pw.FixedColumnWidth(1), // Evening (Fixed width)
         6: pw.FixedColumnWidth(1), // Evening (Fixed width)
+        7: pw.FixedColumnWidth(1), // Evening (Fixed width)
       },
       children: [
         // Main Header Row
@@ -119,6 +130,12 @@ List<LocalMilkSale> formatData(List<LocalMilkSale> list)
               padding: pw.EdgeInsets.all(5),
               alignment: pw.Alignment.center,
               child: pw.Text('Milk type',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Container(
+              padding: pw.EdgeInsets.all(5),
+              alignment: pw.Alignment.center,
+              child: pw.Text('Time',
                   style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
             ),
             pw.Container(
@@ -163,6 +180,7 @@ List<LocalMilkSale> formatData(List<LocalMilkSale> list)
         4: pw.FixedColumnWidth(1), // Evening
         5: pw.FixedColumnWidth(1), // Evening
         6: pw.FixedColumnWidth(1), // Evening
+        7: pw.FixedColumnWidth(1), // Evening
       },
       children: [
         pw.TableRow(
@@ -181,6 +199,11 @@ List<LocalMilkSale> formatData(List<LocalMilkSale> list)
               height: 20,
               alignment: pw.Alignment.center,
               child: pw.Text((sale.milkType??'-').toString(), style: pw.TextStyle(fontSize: 9)),
+            ),
+            pw.Container(
+              height: 20,
+              alignment: pw.Alignment.center,
+              child: pw.Text((findTime(sale.date)??'-').toString(), style: pw.TextStyle(fontSize: 9)),
             ),
             pw.Container(
               height: 20,

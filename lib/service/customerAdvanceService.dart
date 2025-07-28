@@ -29,6 +29,7 @@ class CustomerAdvanceService{
   static Future<List<AdvanceEntry>> getAllAdvanceForAdmin(String adminId)
   async{
     final url = Uri.parse("${CustomWidgets.getIp()}/customerAdvance/getAllAdvanceForAdmin/$adminId");
+  try{
     final response = await http.get(url);
     if(response.statusCode == 200)
     {
@@ -40,6 +41,12 @@ class CustomerAdvanceService{
 
     else{
       print("${response.statusCode} ${response.body} here is customer advance history get");
+      return [];
+    }
+  }
+  catch(e)
+    {
+      print('exception in advance for  admin $e');
       return [];
     }
   }

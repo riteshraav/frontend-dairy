@@ -22,7 +22,6 @@ import 'drawer_screens/drawer_screen.dart';
 
 class MilkCollectionPage extends StatefulWidget {
   final Admin admin = CustomWidgets.currentAdmin();
-  // List<Customer> customerList;
   MilkCollectionPage({super.key});
 
   @override
@@ -66,7 +65,6 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
   FocusNode cFatFocusNode = FocusNode();
   FocusNode cSNFFocusNode = FocusNode();
   List<MilkCollection> todaysCollection = [];
-  String _searchMode = 'Code';
   var customerBox = Hive.box<List<Customer>>('customerBox');
   List<Customer> customerList = [];
   bool check(TextEditingController controller,bool isQuantity)
@@ -82,10 +80,6 @@ class _MilkCollectionPageState extends State<MilkCollectionPage> with SingleTick
   void initState() {
     // TODO: implement initState
     super.initState();
-     // morningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context).morningBuffaloQuantity ?? 0;
-     // morningCowQuantity =Provider.of<CowRateChartProvider>(context).morningCowQuantity;
-     // eveningBuffaloQuantity = Provider.of<BuffaloRatechartProvider>(context).eveningBuffaloQuantity;
-     // eveningCowQuantity = Provider.of<CowRateChartProvider>(context).eveningCowQuantity;
     customerList = customerBox.get('customers')??[];
     _tabController = TabController(length: 2, vsync: this);
     buffaloFocusNode.addListener(() {

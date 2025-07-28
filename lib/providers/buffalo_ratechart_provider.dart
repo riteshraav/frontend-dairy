@@ -79,6 +79,7 @@ class BuffaloRatechartProvider extends ChangeNotifier {
     row = rateData.row;
     morningBuffaloQuantity = rateData.morningQuantity;
     eveningBuffaloQuantity = rateData.eveningQuantity;
+    print('evening buffalo quantity ${eveningBuffaloQuantity}');
     notifyListeners();
   }
 
@@ -265,8 +266,10 @@ class BuffaloRatechartProvider extends ChangeNotifier {
     _eveningBuffaloQuantity = value;
     Admin admin = CustomWidgets().currentAdminNonStatic();
     var buffaloBox = Hive.box<BuffaloRateData>('buffaloBox');
+
     BuffaloRateData buffaloRateData  = buffaloBox.get('buffaloRateData_${admin.id}')??BuffaloRateData();
     buffaloRateData.eveningQuantity = value;
+    print('updated buffalo evening quantity ${buffaloRateData.eveningQuantity} for ${admin.id}');
     buffaloBox.put('buffaloRateData_${admin.id}', buffaloRateData);
     notifyListeners();
   }

@@ -389,7 +389,6 @@ class _DeductionMasterScreenState extends State<DeductionMasterScreen> {
       });
       return;
     }
-    // bool isDeductionUpdated = await DeductionService.addDeduction(deduction);
     bool? isDeductionUpdated =
         await DeductionService().addDeductionAuth(deduction);
     if (isDeductionUpdated == null) {

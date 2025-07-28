@@ -22,14 +22,15 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
   final DateTime today = DateTime.now();
   Admin admin = CustomWidgets.currentAdmin();
   late DateTime currentDate ;
-  List<MilkCollection> currentDateCollection =[];
+  List<MilkCollection> currentShowingCollection =[];
   bool isSearchLoading = false;
-  final List<bool> _selectedTime = <bool>[true, false];
-  final List<bool> _selectedMilkType = <bool>[true, false];
+  final List<bool> _selectedTime = <bool>[false, false];
+  final List<bool> _selectedMilkType = <bool>[false, false];
   bool isCowSelected = false;
   bool isBuffaloSelected = false;
   bool isMorningSelected = false;
   bool isEveningSelected = false;
+  List<MilkCollection> currentDateCollection = [];
   @override
   void initState() {
     // TODO: implement initState
@@ -77,18 +78,17 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
   void applyFiltersForMilkType()
   {
     List<MilkCollection> filteredList = [];
-
     setState(() {
-      currentDateCollection.clear();
+      currentShowingCollection.clear();
     });
     if(isBuffaloSelected && isCowSelected || (isBuffaloSelected == false && isCowSelected == false))
     {
       filteredList.addAll(currentDateCollection);
       setState(() {
-        currentDateCollection = filteredList;
+        currentShowingCollection = filteredList;
       });
       print(filteredList.length);
-      print(currentDateCollection.length);
+      print(currentShowingCollection.length);
 
       return;
     }
@@ -101,7 +101,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
         }
       }
       setState(() {
-        currentDateCollection.addAll(filteredList);
+        currentShowingCollection.addAll(filteredList);
       });
       return;
     }
@@ -114,7 +114,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
         }
       }
       setState(() {
-        currentDateCollection.addAll(filteredList);
+        currentShowingCollection.addAll(filteredList);
       });
       return;
     }
@@ -122,36 +122,34 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
   }
   void applyFiltersForTime()
   {
-
-
     if(isEveningSelected && isMorningSelected || (isEveningSelected == false && isMorningSelected == false))
     {
       return;
     }
-    List<MilkCollection> filteredList = [...currentDateCollection];
+    List<MilkCollection> filteredList = [...currentShowingCollection];
     if(isEveningSelected)
     {
-      for(MilkCollection c in currentDateCollection)
+      for(MilkCollection c in currentShowingCollection)
       {
         if(c.time != "Evening") {
           filteredList.remove(c);
         }
       }
       setState(() {
-        currentDateCollection = filteredList;
+        currentShowingCollection = filteredList;
       });
       return;
     }
     if(isMorningSelected)
     {
-      for(MilkCollection c in currentDateCollection)
+      for(MilkCollection c in currentShowingCollection)
       {
         if(c.time != "Morning") {
           filteredList.remove(c);
         }
       }
       setState(() {
-        currentDateCollection = filteredList;
+        currentShowingCollection = filteredList;
       });
       return;
     }
@@ -186,10 +184,11 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
         return;
       }
     setState(() {
+
       currentDateCollection.clear();
       currentDateCollection.addAll(list);
-      currentDateCollection.clear();
-      currentDateCollection.addAll(list);
+      currentShowingCollection.clear();
+      currentShowingCollection.addAll(list);
       isSearchLoading = false;
     });
     sortList();
@@ -283,10 +282,10 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
                             _selectedMilkType[index] =  !_selectedMilkType[index];
                             isBuffaloSelected = _selectedMilkType[0];
                             isCowSelected = _selectedMilkType[1];
-                            // print("buffalo $isBuffaloSelected");
-                            // print("coww $isCowSelected");
-                            // print("morning $isMorningSelected");
-                            // print("evening $isEveningSelected");
+                            print("buffalo $isBuffaloSelected");
+                            print("coww $isCowSelected");
+                            print("morning $isMorningSelected");
+                            print("evening $isEveningSelected");
                             applyFiltersForMilkType();
                             applyFiltersForTime();
                             sortList();
@@ -323,10 +322,10 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
                             _selectedTime[index] = !_selectedTime[index];
                             isMorningSelected = _selectedTime[0];
                             isEveningSelected = _selectedTime[1];
-                            // print("buffalo $isBuffaloSelected");
-                            // print("coww $isCowSelected");
-                            // print("morning $isMorningSelected");
-                            // print("evening $isEveningSelected");
+                            print("buffalo $isBuffaloSelected");
+                            print("coww $isCowSelected");
+                            print("morning $isMorningSelected");
+                            print("evening $isEveningSelected");
                             applyFiltersForMilkType();
                             applyFiltersForTime();
                             sortList();
@@ -353,7 +352,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
                   ],
                 ),
                 SizedBox(height: 18,),
-                currentDateCollection.isNotEmpty
+                currentShowingCollection.isNotEmpty
                     ? _buildTable()
                     : Center(
                   child: Text(
@@ -381,7 +380,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
       }
       if(status != "Unsuccessful")
         {
-            currentDateCollection.remove(collection);
+            currentShowingCollection.remove(collection);
             if(collection.milkType == 'buffalo')
               {
                 if(collection.time == 'Morning') {
@@ -459,7 +458,7 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
 
 // Columns excluding the Date column
   List<DataColumn> _dataColumnWithoutDate() {
-    DateTime currentDate = DateTime.parse(currentDateCollection.first.date!);
+    DateTime currentDate = DateTime.parse(currentShowingCollection.first.date!);
     bool showDelete = currentDate.day == today.day  && currentDate.month == today.month && currentDate.year == today.year;
     return [
       DataColumn(label: Text('Code', style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white))),
@@ -477,9 +476,9 @@ class _TodaysCollectionScreenState extends State<TodaysCollectionScreen> {
 
 // Rows excluding the Date column
   List<DataRow> _dataRowsWithoutDate() {
-    DateTime currentDate = DateTime.parse(currentDateCollection.first.date!);
+    DateTime currentDate = DateTime.parse(currentShowingCollection.first.date!);
     bool showDelete = currentDate.day == today.day  && currentDate.month == today.month && currentDate.year == today.year;
-    return  currentDateCollection.map((collection) {
+    return  currentShowingCollection.map((collection) {
       return DataRow(
           color: WidgetStateProperty.all(Colors.white),
           selected: true,
