@@ -1,16 +1,22 @@
-name: Greetings
+name: Test Windows Runner on Issue Creation
 
-on: [pull_request_target, issues]
+on:
+  issues:
+    types: [opened]
 
 jobs:
-  greeting:
-    runs-on: [self-hosted, windows]
-    permissions:
-      issues: write
-      pull-requests: write
+  test-windows-runner:
+    runs-on: [self-hosted, Windows]
+
     steps:
-    - uses: actions/first-interaction@v1
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: "Message that will be displayed on users' first issue"
-        pr-message: "Message that will be displayed on users' first pull request"
+      - name: Show basic info
+        run: echo "Issue triggered workflow on Windows runner"
+
+      - name: Print system info
+        run: systeminfo
+
+      - name: List current directory
+        run: dir
+
+      - name: Confirm runner
+        run: echo "Runner working properly"
