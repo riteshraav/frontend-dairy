@@ -1,4 +1,4 @@
-name: Build Flutter Windows App
+name: Build Flutter Android App
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-windows:
+  build-android:
     runs-on: [self-hosted, Windows]
 
     steps:
@@ -23,25 +23,31 @@ jobs:
         shell: powershell
         run: git config --global --add safe.directory C:/flutter_windows_3.29.2-stable/flutter
 
+      - name: Set Android SDK Path
+        shell: powershell
+        run: |
+          echo "ANDROID_HOME=C:\Users\rites\AppData\Local\Android\sdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "C:\Users\rites\AppData\Local\Android\sdk\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "C:\Users\rites\AppData\Local\Android\sdk\platform-tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Accept Android Licenses
+        shell: powershell
+        run: flutter doctor --android-licenses
 
       - name: Flutter Doctor
         shell: powershell
-        run: flutter doctor
+        run: flutter doctor -v
 
-      - name: Enable Windows desktop
-        shell: powershell
-        run: flutter config --enable-windows-desktop
-
-      - name: Install dependencies
+      - name: Get Flutter Dependencies
         shell: powershell
         run: flutter pub get
 
-      - name: Build Windows App (Release)
+      - name: Build Android APK (Release)
         shell: powershell
-        run: flutter build windows --release
+        run: flutter build apk --release
 
-      - name: Upload Windows build artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: windows-build
-          path: build/windows/runner/Release/
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
