@@ -13,27 +13,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Show runner info
-        run: systeminfo
-
-      - name: Install Flutter SDK
+      - name: Set Flutter path
+        shell: pwsh
         run: |
-          if (!(Test-Path "C:\flutter")) {
-            git clone https://github.com/flutter/flutter.git -b stable C:\flutter
-          }
-          echo "FLUTTER_HOME=C:\flutter" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "C:\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "FLUTTER_HOME=C:\flutter_windows_3.29.2-stable\flutter" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "C:\flutter_windows_3.29.2-stable\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Flutter Doctor
+        shell: pwsh
         run: flutter doctor
 
-      - name: Enable Windows desktop support
+      - name: Enable Windows desktop
+        shell: pwsh
         run: flutter config --enable-windows-desktop
 
-      - name: Get Flutter packages
+      - name: Install dependencies
+        shell: pwsh
         run: flutter pub get
 
-      - name: Build Windows App
+      - name: Build Windows App (Release)
+        shell: pwsh
         run: flutter build windows --release
 
       - name: Upload Windows build artifact
