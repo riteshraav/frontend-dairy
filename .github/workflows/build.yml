@@ -1,0 +1,43 @@
+name: Build Flutter Windows App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: [self-hosted, Windows]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Show runner info
+        run: systeminfo
+
+      - name: Install Flutter SDK
+        run: |
+          if (!(Test-Path "C:\flutter")) {
+            git clone https://github.com/flutter/flutter.git -b stable C:\flutter
+          }
+          echo "FLUTTER_HOME=C:\flutter" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "C:\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Flutter Doctor
+        run: flutter doctor
+
+      - name: Enable Windows desktop support
+        run: flutter config --enable-windows-desktop
+
+      - name: Get Flutter packages
+        run: flutter pub get
+
+      - name: Build Windows App
+        run: flutter build windows --release
+
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: build/windows/runner/Release/
