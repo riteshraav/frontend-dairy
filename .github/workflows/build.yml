@@ -14,25 +14,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Flutter path
-        shell: pwsh
+        shell: powershell
         run: |
           echo "FLUTTER_HOME=C:\flutter_windows_3.29.2-stable\flutter" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "C:\flutter_windows_3.29.2-stable\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Flutter Doctor
-        shell: pwsh
+        shell: powershell
         run: flutter doctor
 
       - name: Enable Windows desktop
-        shell: pwsh
+        shell: powershell
         run: flutter config --enable-windows-desktop
 
       - name: Install dependencies
-        shell: pwsh
+        shell: powershell
         run: flutter pub get
 
       - name: Build Windows App (Release)
-        shell: pwsh
+        shell: powershell
         run: flutter build windows --release
 
       - name: Upload Windows build artifact
