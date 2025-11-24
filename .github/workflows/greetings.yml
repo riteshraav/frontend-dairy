@@ -1,12 +1,13 @@
 name: Test Windows Runner on Issue Creation
 
 on:
-  issues:
-    types: [opened]
+  push:
+    branches: 
+      - main
 
 jobs:
   test-windows-runner:
-    runs-on: [self-hosted, Windows]
+    runs-on: [ritesh,self-hosted, Windows]
 
     steps:
       - name: Show basic info
