@@ -7,8 +7,7 @@ on:
 
 jobs:
   test-windows-runner:
-    runs-on: [ritesh,self-hosted, Windows]
-
+    runs-on: [ritesh]
     steps:
       - name: Show basic info
         run: echo "Issue triggered workflow on Windows runner"
