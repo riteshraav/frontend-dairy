@@ -1,0 +1,46 @@
+name: Build Flutter (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: FlutterBuild
+    runs-on: ${{ inputs.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Setup Flutter inside WSL
+      - name: Setup Flutter in WSL
+        shell: powershell
+        run: |
+          wsl bash -c "curl -O https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.3-stable.tar.xz"
+          wsl bash -c "tar xf flutter_linux_3.35.3-stable.tar.xz"
+          wsl bash -c "echo 'export PATH=\$PATH:\$HOME/flutter/bin' >> ~/.bashrc"
+          wsl bash -c "source ~/.bashrc && flutter --version"
+
+      - name: Install dependencies
+        shell: powershell
+        run: wsl bash -c "flutter pub get"
+
+      - name: Flutter Analyze
+        shell: powershell
+        run: wsl bash -c "flutter analyze || true"
+
+      - name: Build APK
+        shell: powershell
+        run: wsl bash -c "flutter build apk --release"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            build/app/outputs/flutter-apk/*.apk
