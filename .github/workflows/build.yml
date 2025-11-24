@@ -26,3 +26,4 @@ jobs:
       runner: macos-latest
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
