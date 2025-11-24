@@ -16,14 +16,5 @@ jobs:
       runner: ritesh
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  build-macos:
-    name: Build (macOS fallback)
-    uses: ./.github/workflows/build-parameterized.yml
-    needs: build-selfhosted
-    if: ${{ needs.build-selfhosted.result == 'failure' || needs.build-selfhosted.result == 'cancelled' }}
-    with:
-      runner: macos-latest
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       
+
