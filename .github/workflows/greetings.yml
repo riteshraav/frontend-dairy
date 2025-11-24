@@ -19,4 +19,4 @@ jobs:
         run: dir
 
       - name: Confirm runner
-        run: echo "Runner working properly"
+        run: echo "Runner working"
