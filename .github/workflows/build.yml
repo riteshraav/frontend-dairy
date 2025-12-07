@@ -1,20 +1,11 @@
 name: Build with Fallback
 
 on:
-  push:
-    branches:
-      - main
-      - wireframe-screens
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 jobs:
-  build-selfhosted:
-    name: Build (self-hosted)
-    uses: ./.github/workflows/build-parameterized.yml
-    with:
-      runner: ritesh
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      
-
+  say_hello:
+    runs-on: ritesh
+    steps:
+      - name: Say Hello
+        run: echo "hello"
