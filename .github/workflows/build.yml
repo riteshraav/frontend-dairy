@@ -1,11 +1,59 @@
-name: Build with Fallback
+name: Deploy to Google Play
 
 on:
   workflow_dispatch:
+    inputs:
+      track:
+        description: "Choose Play Store track"
+        required: true
+        default: "internal"
+      status:
+        description: "Release status"
+        required: true
+        default: "completed"
 
 jobs:
-  say_hello:
-    runs-on: ritesh
+  deploy:
+    name: Deploy AAB to Google Play
+    runs-on: [self-hosted, Windows, ritesh]
+
     steps:
-      - name: Say Hello
-        run: echo "hello"
+      - uses: actions/checkout@v4
+
+      # STEP 1: Find the latest successful Build workflow run
+      - name: Get latest Build workflow run
+        id: get_run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflows = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "build.yml",     // IMPORTANT: your Build workflow filename
+              status: "success"
+            });
+
+            if (workflows.data.workflow_runs.length === 0) {
+              core.setFailed("No successful build workflow run found.");
+            }
+
+            const latestRun = workflows.data.workflow_runs[0];
+            core.setOutput("run_id", latestRun.id);
+
+      # STEP 2: Download the AAB from the Build workflow run
+      - name: Download AAB Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-aab
+          run-id: ${{ steps.get_run.outputs.run_id }}
+          path: ./aab
+
+      # STEP 3: Upload to Google Play Console
+      - name: Upload to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.heycoach.hey_coach
+          releaseFiles: ./aab/app-release.aab
+          track: ${{ github.event.inputs.track }}
+          status: ${{ github.event.inputs.status }}
