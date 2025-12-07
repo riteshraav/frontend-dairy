@@ -12,6 +12,11 @@ on:
         required: true
         default: "completed"
 
+permissions:
+  actions: read
+  contents: read
+
+
 jobs:
   deploy:
     name: Deploy AAB to Google Play
